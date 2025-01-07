@@ -271,7 +271,8 @@ class SwordFighter{
         this.position.y += this.velocity.y
         this.position.x += this.velocity.x
 
-        //determine facing direction 
+        //THIS TAKES THE VELOCITY AND DETERMINES THE DIRECTION THE FOX IS FACING. 
+        //I HAVE NO FUCKING CLUE WHY I DIDN't PUT THIS IN ANIMATE OR VIS-VERSA
         if(this.velocity.x>0){
             this.facing='E'
             this.isRunning=true

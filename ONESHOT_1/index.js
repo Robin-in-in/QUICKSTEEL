@@ -122,7 +122,8 @@ function shortestPathToCircleCenter(circle, rect) {
     };
 }
 
-
+//THIS METHOD IN INDEX DOES A BUNCH OF SHIT. ONE OF THOSE THINGS IS ADJUST THE VELOCITY OF THE PLAYER
+//BASED ON THE LAST PRESSED KEY.
 function animate(){
     c.fillStyle = "black"
     c.fillRect(0,0,canvas.width,canvas.height)
@@ -193,6 +194,7 @@ window.addEventListener('mousemove', (event) => {
 });
 
 
+//THIS LISTENER IN INDEX  DETECTS WHICH KEY WAS LAST PRESSED
 window.addEventListener('keydown', (event) =>{
     switch (event.key){
         case 'd':

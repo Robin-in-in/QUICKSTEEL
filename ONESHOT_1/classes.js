@@ -1,11 +1,11 @@
+//Press Q to create a StrikePoint. Enter the circle to strike towards the center.
 class StrikePoint{
-    constructor({position, ownerFighter, color = 'blue'}){
+    constructor({position, ownerFighter}){
         this.self = this
         this.screenPosition = position
         this.truePosX = position.x + Math.abs(camera.x)
         this.truePosY = position.y + Math.abs(camera.y)
         this.radius = 175
-        this.color = color
         this.initialCamX=camera.x
         this.initialCamY=camera.y
         this.strikeCircle = new Image()
@@ -15,39 +15,24 @@ class StrikePoint{
     }
 
     draw() {
-        /*
-        c.beginPath()s
-        c.arc(this.position.x+(camera.x-this.initialCamX), this.position.y+(camera.y-this.initialCamY), this.radius, 0, Math.PI * 2)
-        c.fillStyle = this.color;
-        c.fill();
-        c.closePath();
-        */
         c.imageSmoothingEnabled=false;
         c.drawImage(this.strikeCircle,0,0,this.radius*2,this.radius*2,this.screenPosition.x+(camera.x-this.initialCamX)-this.radius,this.screenPosition.y+(camera.y-this.initialCamY)-this.radius,this.radius*2*this.scaling,this.radius*2*this.scaling)
     }
 
     update() {
         this.draw()
-        //console.log("CamX", this.initialCamX)
-        //console.log("Circle Position X:", this.screenPosition.x)
-        //console.log("Circle Position Y:", this.screenPosition.y)
     }
 
+    //Update owner fighter's position to center of strike point
     strike() {
         this.fighter.position.x = this.truePosX-(this.fighter.width*this.fighter.animationScale/2)
-        this.fighter.position.y = this.truePosY-(this.fighter.height*this.fighter.animationScale/2)
-        
-        //Terminate instance when finished striking.  
+        this.fighter.position.y = this.truePosY-(this.fighter.height*this.fighter.animationScale/2)  
     }
 }
 
 class Map{
     constructor({position, imageSrc, width, height}) {
         this.position = position
-        /*
-        this.height=50
-        this.width=50
-        */
         this.image = new Image()
         this.image.src = imageSrc
         this.width = width
@@ -69,7 +54,7 @@ class Map{
 }
 
 
-
+//Dynamically adjusts the position of things on screen based of things 
 class Camera {
     constructor({swordFighter, mapWidth, mapHeight}) {
       this.fighter= swordFighter
@@ -81,33 +66,13 @@ class Camera {
     }
   
     update() {
-        //console.log('Player:', this.player);
-        //console.log('Player Position:', this.player.position);
-        //console.log('Player Position X:', this.fighter.position.x) // Safe access operator
-        //console.log("canvas.width/2", canvas.width/2)
-      // Calculate target position (center player on screen)
-
-    
+      // Calculate target position (center player on screen) 
       let targetX = -(this.fighter.position.x - (canvas.width / 2));
       let targetY = -(this.fighter.position.y - (canvas.height / 2));
 
-  
-      
-      // Apply constraints (prevent camera from going outside the map)
-      /*
-      if(this.player.position.x < canvas.width/2||this.player.position.x > (1950-canvas.width/2) ){
-        targetX = 
-      }
-        */
+      //Prevent the camera from moving off the map
       targetX = Math.min(0, Math.max(targetX, -(this.mapWidth) + canvas.width));
       targetY = Math.min(0, Math.max(targetY, -(this.mapHeight) + canvas.height));
-
-      //console.log(this.player.position.x)
-      //console.log(this.player.position.y)
-      //console.log('TargetX:',targetX)
-      //console.log('TargetY',targetY )
-      
-      //console.log('MathminX:', Math.max(targetY, -(this.mapHeight) + canvas.height))
   
       // Smoothly move the camera
       this.x += (targetX - this.x) * this.smoothness;
@@ -116,30 +81,40 @@ class Camera {
 }  
 
 class SwordFighter{
-    constructor({position, velocity, color = 'red'}) {
+    constructor({position, velocity,map}) {
         this.self=this
+
         this.position = position
         this.velocity = velocity
-        this.mapHeight=1300
-        this.mapWidth=1950
+
+        //Map attributes needed so player doesn't leave boundaries
+        this.mapHeight=map.height
+        this.mapWidth=map.width
+
+        //Dimensions of original sprite
         this.height=50
         this.width=50
-        this.color = color
+
+        //Attributes
         this.isSetting = false
         this.point = null;
         this.isRunning = false
         this.facing = 'S'
+
+        //Animation
         this.animCount=0
         this.animLayer=0
         this.animSlowdown=0
+        this.animationScale=2.5
         this.imageFox=new Image()
         this.imageFox.src="Images/IdleFoxS.png"
-        this.animationScale=2.5
-
+        
+        //Strike attributes
         this.strikeRecency = 0
         this.strikeLag = 0.5
-
         this.opacityRemovalRate = 0.1
+
+        //All of these are to create the vectors necessary to adjust the position of the strike trace on screen
         this.preStrikeX = 0
         this.preStrikeCamX = 0
         this.preStrikeY = 0
@@ -151,7 +126,7 @@ class SwordFighter{
     }
 
     draw() {
-        //Hierarchy: Setting, Running, Idle
+        //FIRST Draw the strike trace if there should be one. Do this first so that anything else is drawn over it
         console.log("recency", this.strikeRecency)
         if(this.strikeRecency>0){
             const currentOpacity = this.strikeRecency
@@ -162,21 +137,18 @@ class SwordFighter{
             this.postStrikeCamY=camera.y
             c.strokeStyle = 'rgba(216, 229, 234, '+currentOpacity+')';
             c.lineWidth = 20;                           
-            c.lineCap = 'butt';
-            //console.log("this.preStrikeX",this.preStrikeX)
-            //console.log("this.preStrileCamX",this.preStrikeCamX)                        
-            c.beginPath();
-            //console.log("this.postStrikeCamX",this.postStrikeCamX)
-            //console.log("this.preStrikeCamX",this.postStrikeCamX)             
+            c.lineCap = 'butt';                   
+            //This is the strike trace. If you need to understand this and are confused, ask me to relearn it quickly and ill explain it on discord
+            c.beginPath();          
             c.moveTo(this.preStrikeX+(this.postStrikeCamX-this.preStrikeCamX)+((this.width/2)*this.animationScale), this.preStrikeY+(this.postStrikeCamY-this.preStrikeCamY)+((this.width/2)*this.animationScale));      
             c.lineTo(this.postStrikeX+(this.postStrikeCamX-this.preStrikeCamX)+((this.width/2)*this.animationScale), this.postStrikeY+(this.postStrikeCamY-this.preStrikeCamY)+((this.width/2)*this.animationScale));     
             c.stroke(); 
         }
+        //SECOND These are all the animations related to the actual player
+        //Hierarchy: Striking > Setting > Running > Idle
         if(this.strikeRecency>0){
-            //if(this.facing=='S'){
-                this.imageFox.src="Images/StrikeFoxSanim.png"
-                this.animateSwordFighter(4,12,0,this.animationScale)
-            //}
+            this.imageFox.src="Images/StrikeFoxSanim.png"
+            this.animateSwordFighter(4,12,0,this.animationScale)
         } else{
             if(this.isSetting){
                 this.imageFox.src="Images/IsSetting.png"
@@ -213,10 +185,8 @@ class SwordFighter{
                 }
             }
         }
-        
+        //FOR TESTING: Outlines where the players hurtbox would be.
         //c.fillRect(this.position.x+camera.x,this.position.y+camera.y, this.width*this.animationScale, this.height*this.animationScale)
-        //console.log("Swordfighter: \"this.position.x\"",this.position.x)
-        //console.log("CharacterY",this.position.y)
     }
 
     animateSwordFighter(slowdown,max,start,scaling){
@@ -239,10 +209,7 @@ class SwordFighter{
         // The camera is acting as an offset to keep him on the center of your screen, as he moves across the map.
 
         c.drawImage(this.imageFox,50*(Math.floor(this.animCount/slowdown)),0,this.width,this.height,this.position.x + camera.x,this.position.y + camera.y,this.width*scaling,this.height*scaling)
-        //c.drawImage(this.imageFox,50*(Math.floor(this.animCount/slowdown)),0,this.width,this.height,this.position.x, this.position.y, this.width*scaling, this.height*scaling)
         this.animCount+=1
-        //console.log('AnimCount',this.animCount)
-        //console.log('AnimCountDivision',this.animCount%10)
     }
 
     update() {
@@ -251,28 +218,25 @@ class SwordFighter{
             this.strikeRecency-=0.1
         }
 
-        //set velocity to 0 if player would be passed boundary on next frame
-
-        //console.log("bottom bound",this.position.y + this.height + this.velocity.y)
-        //console.log("top bound", this.position.y+this.velocity.y)
+        //Set velocity to 0 if player would be passed boundary on next frame, or if the player is in lag for something
         if((this.position.y + this.height*this.animationScale+this.velocity.y >= this.mapHeight)||(this.position.y+this.velocity.y<= 0)){
             this.velocity.y=0
-            //console.log(this.velocity.y)
         }
         if((this.position.x +this.width*this.animationScale +this.velocity.x> this.mapWidth)||(this.position.x+this.velocity.x<0)){
             this.velocity.x=0
         }
+        //The player just struck and is in lag
         if(this.strikeRecency>this.strikeLag){
             this.velocity.x=0
             this.velocity.y=0
         }
 
-        //add velocity to the position
+        //Add velocity to the position player
         this.position.y += this.velocity.y
         this.position.x += this.velocity.x
 
-        //THIS TAKES THE VELOCITY AND DETERMINES THE DIRECTION THE FOX IS FACING. 
-        //I HAVE NO FUCKING CLUE WHY I DIDN't PUT THIS IN ANIMATE OR VIS-VERSA
+        //Update "Facing" direction and running tag based on velocity.
+        //Will need to update this if there's an action other than running that gives velocity
         if(this.velocity.x>0){
             this.facing='E'
             this.isRunning=true
@@ -290,35 +254,35 @@ class SwordFighter{
         if(this.velocity.x==0&&this.velocity.y==0){
             this.isRunning=false
         }
-        //console.log('Velocity',this.velocity)
-        //console.log('Running',this.isRunning)
-        //console.log('Facing',this.facing)
+
+        //If the strikepoint connected to the player is placed, detect if he is in it's radius.
+        //If he is then strike. (See the method for comments on what it does)
         if(this.point){
             if(detectCircleFighterCollision(this.point.truePosX,this.point.truePosY,this.point.radius, this)&&!this.isSetting){
-                console.log("IN CIRCLE", true)
                 this.preStrikeX=this.position.x+camera.x
                 this.preStrikeY=this.position.y+camera.y
                 this.preStrikeCamX=camera.x
                 this.preStrikeCamY=camera.y
                 this.point.strike()
-                this.postStrikeX=this.position.x +camera.x
-                this.postStrikeY=this.position.y +camera.y
+                this.postStrikeX=this.position.x+camera.x
+                this.postStrikeY=this.position.y+camera.y
                 this.point = null
-                this.strikeRecency = 1.2;
+                this.strikeRecency = 1.1;
                 this.animCount=0
             }
 
         }
     }
 
+
     setStrikePoint() {
-        //console.log("IsSetting", this.isSetting)
+        //Make sure he isin't already setting, so you can't cancel one set with another.
+        //The animation isin't very long to begin with but it's just a small delay so you can't instantly readjust
         if(!this.isSetting){
-            //console.log("StrikePoint1",this.point)
             this.isSetting = true
-            //the "-7s" here are to offset the top corner of the screen, which is just occupied by whitespace. I might need to actually deal with this in HTML/CSS later, make the game fullscreen offrip or something, since mouse position might be different depending on device im guessing. 
+            //the "-7s" here are to offset the top corner of the screen, which is just occupied by whitespace. I might need to actually deal with this in HTML/CSS later, make the game fullscreen offrip or something, since that white space may or may not be different depending on device 
             this.point = new StrikePoint({position: {x: mouseX -7, y: mouseY-7},ownerFighter:this.self})
-            //console.log("StrikePoint2",this.point)
+            //This is the delay, 0.5 seconds before the tag (this.isSetting) becomes false
             setTimeout(()=>{
                 this.isSetting=false
             }, 500)

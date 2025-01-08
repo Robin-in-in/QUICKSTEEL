@@ -9,11 +9,6 @@ canvas.height = 576
 const canvasOffset = 7
 
 c.fillRect(0,0, canvas.width, canvas.height)
-//0,0 is topleft
-
-
-
-
 
 const background = new Map({position: {x:0,y:0}, imageSrc:'Images/background.jpg',width: 1950,height: 1300})
 
@@ -21,12 +16,7 @@ const player = new SwordFighter({position: {x: 0, y: 0}, velocity: {x:0, y:0}})
 
 const camera = new Camera({swordFighter: player, mapWidth: background.width, mapHeight: background.height})
 
-//const enemy = new SwordFighter({position: {x: 504, y: 275}, velocity: {x:0, y:0}})
-
-
-//console.log(player)
-//console.log(enemy)
-
+//These are all the keys we're tracking
 const keys = {
     a: {
         pressed: false
@@ -49,8 +39,7 @@ let keysPressed = []
 let lastMovementKey
 let speedDebuff = 0;
 
-
-
+//Used to detect when the player collides with the StrikePoint radius
 function detectCircleFighterCollision(circleCenterX, circleCenterY, circleRadius, fighter) {
     // Circle properties
     const centerX = circleCenterX;
@@ -58,81 +47,61 @@ function detectCircleFighterCollision(circleCenterX, circleCenterY, circleRadius
     const radius = circleRadius;
 
     console.log("CenterX",centerX)
-    // Rectangle properties
+    // Fighter properties
     const fx = fighter.position.x;
     const fy = fighter.position.y;
     const fh = fighter.height*fighter.animationScale;
     const fw = fighter.width*fighter.animationScale;
 
-    // Closest point on the rectangle to the circle's center
+    // Closest point on the fighter to the circle's center
     // Finds the minimum between the distance of the right side from the center vs. the distance of the center from the left side
+    // Essentially: What is the shortest distance between one of the player sides and the circle center
     const distanceX = Math.min(Math.abs(centerX-(fx+fw)),Math.abs(fx-centerX))
-    //console.log("ClosestX", closestX)
 
     //Same for top/bottom
     const distanceY = Math.min(Math.abs(centerY-(fy+fh)),Math.abs(fy-centerY))
 
-
-    //const distanceX = centerX - closestX;
-    //const distanceY = centerY - closestY;
-
-    
-    console.log("closest distance",distanceX)
-    //
-    //console.log("BETWEEN FOX AND POINT (X)", Math.abs(distanceX))
-    //console.log("BETWEEN FOX AND POINT (Y)", Math.abs(distanceY))
-
     // Check if the distance is less than or equal to the radius
-
-    //console.log("POINT(X)", centerX)
-    //console.log("POINT(Y)", centerY)
-    //console.log("CLOSEST POINT(X)",closestX)
-    //console.log("CLOSEST POINT(Y)",closestY)
-    //console.log("a^2+b^2", closestX**2 + closestY**2)
-    //console.log("c^2", radius**2)
     return (distanceX ** 2 + distanceY ** 2) <= (radius ** 2)
 }
 
-
+//Not using this as of now
 function shortestPathToCircleCenter(circle, rect) {
-    // Circle properties
+    
     const cx = circle.x;
     const cy = circle.y;
 
-    // Rectangle properties
+    
     const rx = rect.x;
     const ry = rect.y;
     const rw = rect.width;
     const rh = rect.height;
 
-    // Closest point on the rectangle to the circle's center
+    
     const closestX = Math.max(rx, Math.min(cx, rx + rw));
     const closestY = Math.max(ry, Math.min(cy, ry + rh));
 
-    // Shortest path vector
+    
     const vectorX = cx - closestX;
     const vectorY = cy - closestY;
 
-    // Magnitude of the shortest path
+    
     const magnitude = Math.sqrt(vectorX ** 2 + vectorY ** 2);
 
     return {
         vector: { x: vectorX, y: vectorY },
-        magnitude: magnitude, // Length of the path
+        magnitude: magnitude, 
     };
 }
 
-//THIS METHOD IN INDEX DOES A BUNCH OF SHIT. ONE OF THOSE THINGS IS ADJUST THE VELOCITY OF THE PLAYER
-//BASED ON THE LAST PRESSED KEY.
+
 function animate(){
+    //Fill the canvas black
     c.fillStyle = "black"
     c.fillRect(0,0,canvas.width,canvas.height)
     //Set the canvas black
 
     background.draw({position: {x:camera.x,y:camera.y}})
-    
-    
-    //Not sure exactly how this works
 
     currentMovementKey=keysPressed[keysPressed.length-1]
     
@@ -141,7 +110,6 @@ function animate(){
     } else if(lastMovementKey!=currentMovementKey){
         speedDebuff=0
     }
-    //console.log(speedDebuff)
     //Logic for decreasing speed of player after dash 
 
     player.velocity.x=0
@@ -162,22 +130,17 @@ function animate(){
         player.velocity.y = 15 - speedDebuff
         lastMovementKey=currentMovementKey
     }
-    player.update()
-    camera.update()
-    //console.log(camera)
+
+    lastMovementKey = currentMovementKey;  // Update the lastMovementKey for next frame comparison
+
+    //Update each object
+    player.update();
+    camera.update();
+
     if(player.point){
         player.point.update()
-        //console.log("CircleX",player.point.position.x)
-        //console.log("CircleY",player.point.position.y)
     }
-    
-    //console.log("PlayerY",player.point.position.y)
-    //console.log("PlayerX",player.position.x)
-    //console.log("PlaterY",player.position.y)
-    //console.log(point)
-    //console.log(keysPressed)
-    //console.log(lastMovementKey)
-    //console.log(speedDebuff)
+
 
     window.requestAnimationFrame(animate)
 }
@@ -194,7 +157,7 @@ window.addEventListener('mousemove', (event) => {
 });
 
 
-//THIS LISTENER IN INDEX  DETECTS WHICH KEY WAS LAST PRESSED
+//Tracks which key was last pressed
 window.addEventListener('keydown', (event) =>{
     switch (event.key){
         case 'd':
@@ -232,15 +195,13 @@ window.addEventListener('keydown', (event) =>{
             }
         case 'q':
             if(!event.repeat){
-                
-                //point = new StrikePoint({position: {x: mouseX, y: mouseY}})
                 player.setStrikePoint()
                 break
             }
     }
-    //console.log(event.key)
 })
 
+//Tracks when keys are released
 window.addEventListener('keyup', (event) =>{
     let upIndex
 

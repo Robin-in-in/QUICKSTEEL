@@ -137,8 +137,6 @@ function animate(){
     } else if(lastMovementKey != currentMovementKey){
         speedDebuff = 0
     }
-    //console.log(speedDebuff)
-    //Logic for decreasing speed of player after dash 
 
     player.velocity.x = 0
     player.velocity.y = 0

@@ -268,7 +268,7 @@ class SwordFighter{
                 this.postStrikeX=this.position.x +camera.x
                 this.postStrikeY=this.position.y +camera.y
                 this.point = null
-                this.strikeRecency = 1.2;
+                this.strikeRecency = 1.1;
                 this.animCount=0
             }
 

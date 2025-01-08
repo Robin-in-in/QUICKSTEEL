@@ -6,7 +6,12 @@ const c = canvas.getContext('2d')
 canvas.width = 1024
 canvas.height = 576
 
-const canvasOffset = 7
+
+const screenWidth = window.innerWidth;
+const screenHeight = window.innerHeight;
+
+const canvasOffsetX = (screenWidth-canvas.width)/2
+const canvasOffsetY = (screenHeight-canvas.height)/2
 
 c.fillRect(0,0, canvas.width, canvas.height)
 //0,0 is topleft

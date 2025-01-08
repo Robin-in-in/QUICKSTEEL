@@ -127,60 +127,52 @@ function shortestPathToCircleCenter(circle, rect) {
 function animate(){
     c.fillStyle = "black"
     c.fillRect(0,0,canvas.width,canvas.height)
-    //Set the canvas black
+    background.draw({position: {x:camera.x, y:camera.y}})
 
-    background.draw({position: {x:camera.x,y:camera.y}})
-    
-    
-    //Not sure exactly how this works
+    // Get the currentMovementKey from the last of the pressed keys array
+    let currentMovementKey = keysPressed[keysPressed.length - 1]
 
-    currentMovementKey=keysPressed[keysPressed.length-1]
-    
-    if((lastMovementKey===currentMovementKey)&&(speedDebuff<7.5)){
-        speedDebuff+=0.6
-    } else if(lastMovementKey!=currentMovementKey){
-        speedDebuff=0
+    if((lastMovementKey === currentMovementKey) && (speedDebuff < 7.5)){
+        speedDebuff += 0.6
+    } else if(lastMovementKey != currentMovementKey){
+        speedDebuff = 0
     }
-    //console.log(speedDebuff)
-    //Logic for decreasing speed of player after dash 
 
-    player.velocity.x=0
-    player.velocity.y=0
-    if (currentMovementKey=='a'){
-        player.velocity.x = -(15 -speedDebuff)
-        lastMovementKey=currentMovementKey
+    player.velocity.x = 0
+    player.velocity.y = 0
+
+    const speed = 15 - speedDebuff;
+    const isMovingVertically = keys.w.pressed || keys.s.pressed;
+    const isMovingHorizontally = keys.a.pressed || keys.d.pressed;
+
+    // Normalize diagonal speed to prevent faster movement
+    const diagonalSpeed = isMovingVertically && isMovingHorizontally ? speed / Math.sqrt(2) : speed;
+
+    if (keys.a.pressed) {
+        player.velocity.x = -diagonalSpeed;
     }
-    else if (currentMovementKey=='d'){
-        player.velocity.x = 15 - speedDebuff
-        lastMovementKey=currentMovementKey
+    if (keys.d.pressed) {
+        player.velocity.x = diagonalSpeed;
     }
-    else if (currentMovementKey=='w'){
-        player.velocity.y = -(15 - speedDebuff)
-        lastMovementKey=currentMovementKey
+    if (keys.w.pressed) {
+        player.velocity.y = -diagonalSpeed;
     }
-    else if (currentMovementKey=='s'){
-        player.velocity.y = 15 - speedDebuff
-        lastMovementKey=currentMovementKey
+    if (keys.s.pressed) {
+        player.velocity.y = diagonalSpeed;
     }
-    player.update()
-    camera.update()
-    //console.log(camera)
+
+    lastMovementKey = currentMovementKey;  // Update the lastMovementKey for next frame comparison
+
+    player.update();
+    camera.update();
+
     if(player.point){
-        player.point.update()
-        //console.log("CircleX",player.point.position.x)
-        //console.log("CircleY",player.point.position.y)
+        player.point.update();
     }
-    
-    //console.log("PlayerY",player.point.position.y)
-    //console.log("PlayerX",player.position.x)
-    //console.log("PlaterY",player.position.y)
-    //console.log(point)
-    //console.log(keysPressed)
-    //console.log(lastMovementKey)
-    //console.log(speedDebuff)
 
-    window.requestAnimationFrame(animate)
+    window.requestAnimationFrame(animate);
 }
+
 
 animate()
 

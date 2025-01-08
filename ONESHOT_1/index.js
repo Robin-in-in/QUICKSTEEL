@@ -163,9 +163,8 @@ function animate(){
     if (keys.w.pressed) {
         player.velocity.y = -diagonalSpeed;
     }
-    else if (currentMovementKey=='s'){
-        player.velocity.y = 15 - speedDebuff
-        lastMovementKey=currentMovementKey
+    if (keys.s.pressed) {
+        player.velocity.y = diagonalSpeed;
     }
     player.update()
     camera.update()

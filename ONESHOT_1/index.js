@@ -17,7 +17,7 @@ c.fillRect(0,0, canvas.width, canvas.height)
 
 const background = new Map({position: {x:0,y:0}, imageSrc:'Images/background.jpg',width: 1950,height: 1300})
 
-const player = new SwordFighter({position: {x: 0, y: 0}, velocity: {x:0, y:0}})
+const player = new SwordFighter({position: {x: 0, y: 0}, velocity: {x:0, y:0, map: background}})
 
 const camera = new Camera({swordFighter: player, mapWidth: background.width, mapHeight: background.height})
 

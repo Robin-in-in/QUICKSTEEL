@@ -144,11 +144,18 @@ function animate(){
     //console.log(speedDebuff)
     //Logic for decreasing speed of player after dash 
 
-    player.velocity.x=0
-    player.velocity.y=0
-    if (currentMovementKey=='a'){
-        player.velocity.x = -(15 -speedDebuff)
-        lastMovementKey=currentMovementKey
+    player.velocity.x = 0
+    player.velocity.y = 0
+
+    const speed = 15 - speedDebuff;
+    const isMovingVertically = keys.w.pressed || keys.s.pressed;
+    const isMovingHorizontally = keys.a.pressed || keys.d.pressed;
+
+    // Normalize diagonal speed to prevent faster movement
+    const diagonalSpeed = isMovingVertically && isMovingHorizontally ? speed / Math.sqrt(2) : speed;
+
+    if (keys.a.pressed) {
+        player.velocity.x = -diagonalSpeed;
     }
     else if (currentMovementKey=='d'){
         player.velocity.x = 15 - speedDebuff

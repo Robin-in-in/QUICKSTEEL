@@ -166,9 +166,12 @@ function animate(){
     if (keys.s.pressed) {
         player.velocity.y = diagonalSpeed;
     }
-    player.update()
-    camera.update()
-    //console.log(camera)
+
+    lastMovementKey = currentMovementKey;  // Update the lastMovementKey for next frame comparison
+
+    player.update();
+    camera.update();
+
     if(player.point){
         player.point.update()
         //console.log("CircleX",player.point.position.x)

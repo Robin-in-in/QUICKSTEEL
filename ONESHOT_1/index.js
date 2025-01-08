@@ -127,19 +127,15 @@ function shortestPathToCircleCenter(circle, rect) {
 function animate(){
     c.fillStyle = "black"
     c.fillRect(0,0,canvas.width,canvas.height)
-    //Set the canvas black
+    background.draw({position: {x:camera.x, y:camera.y}})
 
-    background.draw({position: {x:camera.x,y:camera.y}})
-    
-    
-    //Not sure exactly how this works
+    // Get the currentMovementKey from the last of the pressed keys array
+    let currentMovementKey = keysPressed[keysPressed.length - 1]
 
-    currentMovementKey=keysPressed[keysPressed.length-1]
-    
-    if((lastMovementKey===currentMovementKey)&&(speedDebuff<7.5)){
-        speedDebuff+=0.6
-    } else if(lastMovementKey!=currentMovementKey){
-        speedDebuff=0
+    if((lastMovementKey === currentMovementKey) && (speedDebuff < 7.5)){
+        speedDebuff += 0.6
+    } else if(lastMovementKey != currentMovementKey){
+        speedDebuff = 0
     }
     //console.log(speedDebuff)
     //Logic for decreasing speed of player after dash 

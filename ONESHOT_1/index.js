@@ -175,16 +175,8 @@ function animate(){
     if(player.point){
         player.point.update();
     }
-    
-    //console.log("PlayerY",player.point.position.y)
-    //console.log("PlayerX",player.position.x)
-    //console.log("PlaterY",player.position.y)
-    //console.log(point)
-    //console.log(keysPressed)
-    //console.log(lastMovementKey)
-    //console.log(speedDebuff)
 
-    window.requestAnimationFrame(animate)
+    window.requestAnimationFrame(animate);
 }
 
 animate()

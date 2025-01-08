@@ -173,9 +173,7 @@ function animate(){
     camera.update();
 
     if(player.point){
-        player.point.update()
-        //console.log("CircleX",player.point.position.x)
-        //console.log("CircleY",player.point.position.y)
+        player.point.update();
     }
     
     //console.log("PlayerY",player.point.position.y)

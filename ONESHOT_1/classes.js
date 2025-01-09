@@ -237,9 +237,6 @@ class SwordFighter{
         }
 
         //Set velocity to 0 if player would be passed boundary on next frame, or if the player is in lag for something
-        //THIS IS WHERE THE INVISIBLE WALL BUG IS, i couldn't figure it out yet though
-        console.log("Player X:",this.position.x + this.width*this.animationScale+this.velocity.x)
-        console.log("MapWidth", this.mapWidth)
         if(this.position.y + this.height*this.animationScale+this.velocity.y >= this.mapHeight||(this.position.y+this.velocity.y<= 0)){
             this.velocity.y=0
         }

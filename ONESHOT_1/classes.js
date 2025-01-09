@@ -10,13 +10,13 @@ class StrikePoint{
         this.initialCamY=camera.y
         this.strikeCircle = new Image()
         this.strikeCircle.src = "Images/StrikePoint.png"
-        this.scaling=1
+        this.scaling=1.2
         this.fighter=ownerFighter
     }
 
     draw() {
         c.imageSmoothingEnabled=false;
-        c.drawImage(this.strikeCircle,0,0,this.radius*2,this.radius*2,this.screenPosition.x+(camera.x-this.initialCamX)-this.radius,this.screenPosition.y+(camera.y-this.initialCamY)-this.radius,this.radius*2*this.scaling,this.radius*2*this.scaling)
+        c.drawImage(this.strikeCircle,0,0,this.radius*2,this.radius*2,this.screenPosition.x+(camera.x-this.initialCamX)-this.scaling*this.radius,this.screenPosition.y+(camera.y-this.initialCamY)-this.scaling*this.radius,this.radius*2*this.scaling,this.radius*2*this.scaling)
     }
 
     update() {
@@ -101,13 +101,20 @@ class SwordFighter{
         this.isRunning = false
         this.facing = 'S'
 
-        //Animation
+        //General Animation
+        this.animationScale=2.5
+
+        //Player Animation
         this.animCount=0
         this.animLayer=0
         this.animSlowdown=0
         this.imageFox=new Image()
         this.imageFox.src="Images/IdleFoxS.png"
-        this.animationScale=2.5
+        
+        //Cloud Animation
+        this.cloudAnimCount=0
+        this.imageCloud=new Image()
+        this.imageCloud.src="Images/DashCloud.png"
 
         //Strike Attributes
         this.strikeRecency = 0
@@ -127,6 +134,12 @@ class SwordFighter{
         this.currentMovementKey
         this.previousMovementKey
         this.previousFacing
+    }
+
+    drawCloud(scaling){
+        if(this.facing=='N'){
+            c.drawImage(this.imageCloud,0,0,50,100,this.position.x + camera.x,this.position.y + camera.y - this.height,50*scaling,100*scaling)
+        }
     }
 
     draw() {
@@ -170,6 +183,10 @@ class SwordFighter{
                         this.imageFox.src="Images/RunFoxSE.png"
                         this.animateSwordFighter(10,40,20,this.animationScale)
                     }else if(this.facing=='N'){
+                        if(speedDebuff<2&&this.isRunning){
+                            console.log('entered')
+                            //this.drawCloud(this.animationScale)
+                        }
                         this.imageFox.src="Images/RunFoxNsheet.png"
                         this.animateSwordFighter(10,20,0,this.animationScale)
                         
@@ -211,6 +228,7 @@ class SwordFighter{
         if(this.animCount>=max){
             this.animCount=start
         }
+        //Might be able to move this line to reduce operations
         c.imageSmoothingEnabled=false;
 
         //This works by adjusting the sprite relative to the camera's postion. 

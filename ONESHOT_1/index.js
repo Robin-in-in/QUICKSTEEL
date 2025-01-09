@@ -112,42 +112,7 @@ function animate(){
     c.fillRect(0,0,canvas.width,canvas.height)
     background.draw({position: {x:camera.x, y:camera.y}})
 
-    // Get the currentMovementKey from the last of the pressed keys array
-    let currentMovementKey = keysPressed[keysPressed.length - 1]
-
-    //Logic for decreasing speed of player after initial movement 
-    if((lastMovementKey === currentMovementKey) && (speedDebuff < 7.5)){
-        speedDebuff += 0.6
-    } else if(lastMovementKey != currentMovementKey){
-        speedDebuff = 0
-    }
-    
-
-    player.velocity.x = 0
-    player.velocity.y = 0
-
-    const speed = 15 - speedDebuff;
-    const isMovingVertically = keys.w.pressed || keys.s.pressed;
-    const isMovingHorizontally = keys.a.pressed || keys.d.pressed;
-
-    // Normalize diagonal speed to prevent faster movement
-    const diagonalSpeed = isMovingVertically && isMovingHorizontally ? speed / Math.sqrt(2) : speed;
-
-    if (keys.a.pressed) {
-        player.velocity.x = -diagonalSpeed;
-    }
-    if (keys.d.pressed) {
-        player.velocity.x = diagonalSpeed;
-    }
-    if (keys.w.pressed) {
-        player.velocity.y = -diagonalSpeed;
-    }
-    if (keys.s.pressed) {
-        player.velocity.y = diagonalSpeed;
-    }
-
-    lastMovementKey = currentMovementKey;  // Update the lastMovementKey for next frame comparison
-
+    player.move(keys);
     //Update each object
     player.update();
     camera.update();

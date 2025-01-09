@@ -123,6 +123,10 @@ class SwordFighter{
         this.postStrikeCamX = 0
         this.postStrikeY = 0
         this.postStrikeCamY = 0
+
+        this.currentMovementKey
+        this.previousMovementKey
+        this.previousFacing
     }
 
     draw() {
@@ -159,10 +163,23 @@ class SwordFighter{
                     if(this.facing=='S'){
                         this.imageFox.src="Images/RunFoxS.png"
                         this.animateSwordFighter(10,30,0,this.animationScale)
-                    } else if(this.facing=='N'){
+                    } else if(this.facing=='SW'){
+                        this.imageFox.src="Images/RunFoxSW.png"
+                        this.animateSwordFighter(10,40,20,this.animationScale)
+                    } else if(this.facing=='SE'){
+                        this.imageFox.src="Images/RunFoxSE.png"
+                        this.animateSwordFighter(10,40,20,this.animationScale)
+                    }else if(this.facing=='N'){
                         this.imageFox.src="Images/RunFoxNsheet.png"
                         this.animateSwordFighter(10,20,0,this.animationScale)
-                    } else if(this.facing=='W'){
+                        
+                    } else if(this.facing=='NE'){
+                        this.imageFox.src="Images/RunFoxNE.png"
+                        this.animateSwordFighter(10,40,20,this.animationScale)
+                    }else if(this.facing=='NW'){
+                        this.imageFox.src="Images/RunFoxNW.png"
+                        this.animateSwordFighter(10,40,20,this.animationScale)
+                    }else if(this.facing=='W'){
                         this.imageFox.src="Images/RunFoxW.png"
                         this.animateSwordFighter(10,20,0,this.animationScale)
                     } else if(this.facing=='E'){
@@ -220,10 +237,11 @@ class SwordFighter{
         }
 
         //Set velocity to 0 if player would be passed boundary on next frame, or if the player is in lag for something
-        if((this.position.y + this.height*this.animationScale+this.velocity.y >= this.mapHeight)||(this.position.y+this.velocity.y<= 0)){
+        //THIS IS WHERE THE INVISIBLE WALL BUG IS, i couldn't figure it out yet though
+        if(this.position.y + this.height*this.animationScale+this.velocity.y >= this.mapHeight||(this.position.y+this.velocity.y<= 0)){
             this.velocity.y=0
         }
-        if((this.position.x +this.width*this.animationScale +this.velocity.x> this.mapWidth)||(this.position.x+this.velocity.x<0)){
+        if(this.position.x +this.width*this.animationScale +this.velocity.x>= this.mapWidth||(this.position.x+this.velocity.x<0)){
             this.velocity.x=0
         }
         if(this.strikeRecency>this.strikeLag){
@@ -237,24 +255,43 @@ class SwordFighter{
 
         //Update "Facing" direction and running tag based on velocity.
         //Will need to update this if there's an action other than running that gives velocity
-        if(this.velocity.x>0){
+        if(this.velocity.x>0&&this.velocity.y==0){
             this.facing='E'
             this.isRunning=true
-        } else if(this.velocity.x<0){
+        } else if(this.velocity.x>0&&this.velocity.y>0){
+            this.facing='SE'
+            this.isRunning=true
+        } else if(this.velocity.x>0&&this.velocity.y<0){
+            this.facing='NE'
+            this.isRunning=true
+        } else if(this.velocity.x<0&&this.velocity.y==0){
             this.facing='W'
             this.isRunning=true
-        }
-        if(this.velocity.y>0){
+        } else if(this.velocity.x<0&&this.velocity.y>0){
+            this.facing='SW'
+            this.isRunning=true
+        } else if(this.velocity.x<0&&this.velocity.y<0){
+            this.facing='NW'
+            this.isRunning=true
+        } 
+        if(this.velocity.y>0 && this.velocity.x==0){
             this.facing='S'
             this.isRunning=true
-        } else if(this.velocity.y<0){
+        } else if(this.velocity.y<0 && this.velocity.x==0){
             this.facing='N'
             this.isRunning=true
         }
         if(this.velocity.x==0&&this.velocity.y==0){
+            if(this.facing=='SW'||this.facing=='NW'){
+                this.facing='W'
+            }
+            if(this.facing=='SE'||this.facing=='NE'){
+                this.facing='E'
+            }
             this.isRunning=false
         }
-
+        console.log("Facing:", this.facing)
+        
         //If the strikepoint connected to the player is placed, detect if he is in it's radius.
         //If he is then strike. (See the method for comments on what it does)
         if(this.point){
@@ -274,6 +311,61 @@ class SwordFighter{
 
         }
     }
+
+    move(keys){
+        //Logic for decreasing speed of player after initial movement 
+        // Get the currentMovementKey from the last of the pressed keys array
+        this.currentMovementKey = keysPressed[keysPressed.length - 1]
+        
+        if((this.previousFacing === this.facing) && (speedDebuff < 7.5)){
+            speedDebuff += 0.6
+        } else if(this.previousFacing == this.facing&&this.previousMovementKey!=this.currentMovementKey){
+            speedDebuff = 0
+        } else if(this.previousFacing != this.facing){
+            speedDebuff = 0
+        }
+        
+        /*
+        //Something about this feels off- like too fast to me. 
+        // I'm leaving it here though since we might think this version is sluggish. I think it will feel better when I add animations though
+        // Definitely open to speeding up diagonal movement if animation doesn't fix it though - making debuff ceiling lower for diagonal or something like that.
+        if((this.previousMovementKey == this.currentMovementKey) && (speedDebuff < 7.5)){
+            speedDebuff += 0.6
+        } else if(this.previousMovementKey != this.currentMovementKey){
+            speedDebuff = 0
+        }
+        */
+        //console.log("SpeedDebuff:", speedDebuff) 
+        
+        
+
+        player.velocity.x = 0
+        player.velocity.y = 0
+
+        const speed = 15 - speedDebuff;
+        const isMovingVertically = keys.w.pressed || keys.s.pressed;
+        const isMovingHorizontally = keys.a.pressed || keys.d.pressed;
+
+        // Normalize diagonal speed to prevent faster movement
+        const diagonalSpeed = isMovingVertically && isMovingHorizontally ? speed / Math.sqrt(2) : speed;
+
+        if (keys.a.pressed) {
+            player.velocity.x = -diagonalSpeed;
+        }
+        if (keys.d.pressed) {
+            player.velocity.x = diagonalSpeed;
+        }
+        if (keys.w.pressed) {
+            player.velocity.y = -diagonalSpeed;
+        }
+        if (keys.s.pressed) {
+            player.velocity.y = diagonalSpeed;
+        }
+
+        this.previousFacing = this.facing;  // Update the lastMovementKey for next frame comparison
+        this.previousMovementKey = this.currentMovementKey
+    }
+
 
     setStrikePoint() {
         //Make sure he isin't already setting, so you can't cancel one set with another.

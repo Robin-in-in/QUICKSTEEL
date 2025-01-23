@@ -324,6 +324,10 @@ class SwordFighter{
         }
         if(this.isParrying){
             speedDebuff=10
+        } else if(this.recentParry){
+            if(speedDebuff<5){
+                speedDebuff=5
+            }
         }
 
         //add velocity to the position
@@ -384,6 +388,8 @@ class SwordFighter{
                 this.point = null
                 this.strikeRecency = 1.1;
                 this.animCount=0
+                //cleanse parry debuff
+                this.recentParry=false
             }
 
         }
@@ -456,7 +462,7 @@ class SwordFighter{
             }, 150)
             setTimeout(()=>{
                 this.recentParry=false
-            }, 3000)
+            }, 2000)
         }
     }
 }

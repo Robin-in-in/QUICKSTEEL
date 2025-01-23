@@ -31,21 +31,41 @@ class StrikePoint{
 }
 
 class Map{
-    constructor({position, imageSrc, width, height}) {
+    constructor({position, imageSrc, width, height,upscale}) {
         this.position = position
-        this.image = new Image()
-        this.image.src = imageSrc
+        this.mapImage = new Image()
+        this.mapImage.src = imageSrc
         this.width = width
         this.height = height
+        this.upscale=upscale
+
+        this.animCount=0
     }
 
     draw() {
-        c.drawImage(this.image, this.position.x, this.position.y)
+        //c.drawImage(this.image, this.position.x, this.position.y)
+        c.drawImage(this.mapImage,0,0,this.width/this.upscale,this.height/this.upscale,this.position.x,this.position.y,this.width,this.height)
+
     }
 
     draw({position}) {
         this.position=position
-        c.drawImage(this.image, this.position.x, this.position.y)
+        //c.drawImage(this.mapImage, this.position.x, this.position.y)
+        c.drawImage(this.mapImage,0,0,this.width/this.upscale,this.height/this.upscale,this.position.x,this.position.y,this.width,this.height)
+
+    }
+
+    animateMap({position,start,max,slowdown}){
+        if(this.animCount>=max){
+            this.animCount=start
+        }
+        console.log("max", max)
+        console.log("start", start)
+        console.log("mapAnimCount:", this.animCount)
+        console.log("Map positionX", position.x)
+        this.position=position
+        c.drawImage(this.mapImage,488*(Math.floor(this.animCount/slowdown)),0,this.width/this.upscale,this.height/this.upscale,this.position.x,this.position.y,this.width,this.height)
+        this.animCount+=1
     }
 
     update() {
@@ -112,6 +132,7 @@ class SwordFighter{
         this.imageFox.src="Images/IdleFoxS.png"
         
         //Cloud Animation
+        this.traceDrawn=false
         this.cloudAnimCount=0
         this.imageCloud=new Image()
         this.imageCloud.src="Images/DashCloud.png"
@@ -137,8 +158,38 @@ class SwordFighter{
     }
 
     drawCloud(scaling){
-        if(this.facing=='N'){
-            c.drawImage(this.imageCloud,0,0,50,100,this.position.x + camera.x,this.position.y + camera.y - this.height,50*scaling,100*scaling)
+        this.traceDrawn=true
+        if(this.facing!='N'){
+            if(speedDebuff<2&&this.isRunning){
+                if(this.facing=='S'){
+                    this.imageCloud.src="Images/DashTraceS.png"
+                    c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x,this.position.y + camera.y - this.height,50*scaling,50*scaling)
+                } else if(this.facing=='W'){
+                    this.imageCloud.src="Images/DashTraceW.png"
+                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x+this.width, this.position.y + camera.y, 50 * scaling, 50 * scaling);
+                } else if (this.facing == 'E') {
+                    this.imageCloud.src = "Images/DashTraceE.png"
+                    c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x-this.width,this.position.y + camera.y,50*scaling,50*scaling)
+                } else if (this.facing == 'NE') {
+                    //this.imageCloud.src = "Images/DashTraceNE.png";
+                    //c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x - this.width/2, this.position.y + camera.y + this.height/4, 50 * scaling, 50 * scaling);
+                } else if (this.facing == 'NW') {
+                    //this.imageCloud.src = "Images/DashTraceNW.png";
+                    //c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x + this.width/2, this.position.y + camera.y + this.height/4, 50 * scaling, 50 * scaling);
+                } else if (this.facing == 'SE') {
+                    this.imageCloud.src = "Images/DashTraceSE.png";
+                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + 
+                        camera.x - this.width/2, this.position.y + camera.y - this.height/4, 50 * scaling, 50 * scaling);
+                } else if (this.facing == 'SW') {
+                    this.imageCloud.src = "Images/DashTraceSW.png";
+                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x + this.width/2, this.position.y + camera.y - this.height/4, 50 * scaling, 50 * scaling);
+                }
+            }
+        } else{
+            if(speedDebuff<2){
+                this.imageCloud.src="Images/DashTraceN.png"
+                c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x,this.position.y + camera.y + this.height ,50*scaling,50*scaling)
+            }
         }
     }
 
@@ -147,9 +198,6 @@ class SwordFighter{
         console.log("recency", this.strikeRecency)
         if(this.strikeRecency>0){
             const currentOpacity = this.strikeRecency
-            if(currentOpacity>1){
-                const currentOpacity = 1 
-            }
             this.postStrikeCamX=camera.x
             this.postStrikeCamY=camera.y
             c.strokeStyle = 'rgba(216, 229, 234, '+currentOpacity+')';
@@ -172,10 +220,13 @@ class SwordFighter{
                 this.imageFox.src="Images/IsSetting.png"
                 this.animateSwordFighter(7,49,0,this.animationScale)
             }else{
+                console.log('running', this.isRunning)
+                console.log('debuff', speedDebuff)
                 if(this.isRunning){
                     if(this.facing=='S'){
                         this.imageFox.src="Images/RunFoxS.png"
-                        this.animateSwordFighter(10,30,0,this.animationScale)
+                        this.animateSwordFighter(10,30,0,this.animationScale)    
+                        this.drawCloud(this.animationScale)
                     } else if(this.facing=='SW'){
                         this.imageFox.src="Images/RunFoxSW.png"
                         this.animateSwordFighter(10,40,20,this.animationScale)
@@ -183,10 +234,6 @@ class SwordFighter{
                         this.imageFox.src="Images/RunFoxSE.png"
                         this.animateSwordFighter(10,40,20,this.animationScale)
                     }else if(this.facing=='N'){
-                        if(speedDebuff<2&&this.isRunning){
-                            console.log('entered')
-                            //this.drawCloud(this.animationScale)
-                        }
                         this.imageFox.src="Images/RunFoxNsheet.png"
                         this.animateSwordFighter(10,20,0,this.animationScale)
                         
@@ -225,6 +272,10 @@ class SwordFighter{
     }
 
     animateSwordFighter(slowdown,max,start,scaling){
+
+        //Draw cloud/trace behind elements
+        this.drawCloud(this.animationScale)
+
         if(this.animCount>=max){
             this.animCount=start
         }
@@ -243,13 +294,16 @@ class SwordFighter{
         // 
         // 
         // The camera is acting as an offset to keep him on the center of your screen, as he moves across the map.
-
+        
         c.drawImage(this.imageFox,50*(Math.floor(this.animCount/slowdown)),0,this.width,this.height,this.position.x + camera.x,this.position.y + camera.y,this.width*scaling,this.height*scaling)
         this.animCount+=1
+
+        //Draw cloud/trace in front of elements (if necessary)
+        this.drawCloud(this.animationScale)
+        this.traceDrawn=false
     }
 
     update() {
-        this.draw()
         if(this.strikeRecency>0){
             this.strikeRecency-=0.1
         }
@@ -327,6 +381,7 @@ class SwordFighter{
             }
 
         }
+        this.draw()
     }
 
     move(keys){
@@ -340,21 +395,7 @@ class SwordFighter{
             speedDebuff = 0
         } else if(this.previousFacing != this.facing){
             speedDebuff = 0
-        }
-        
-        /*
-        //Something about this feels off- like too fast to me. 
-        // I'm leaving it here though since we might think this version is sluggish. I think it will feel better when I add animations though
-        // Definitely open to speeding up diagonal movement if animation doesn't fix it though - making debuff ceiling lower for diagonal or something like that.
-        if((this.previousMovementKey == this.currentMovementKey) && (speedDebuff < 7.5)){
-            speedDebuff += 0.6
-        } else if(this.previousMovementKey != this.currentMovementKey){
-            speedDebuff = 0
-        }
-        */
-        //console.log("SpeedDebuff:", speedDebuff) 
-        
-        
+        }        
 
         player.velocity.x = 0
         player.velocity.y = 0

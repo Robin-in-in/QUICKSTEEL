@@ -20,7 +20,10 @@ c.fillRect(0,0, canvas.width, canvas.height)
 
 
 
-const background = new Map({position: {x:0,y:0}, imageSrc:'Images/background.jpg',width: 1950,height: 1300})
+const background = new Map({position: {x:0,y:0}, imageSrc:'Images/background.jpg',width: 1950,height: 1300,upscale:1})
+const grassBackground = new Map({position: {x:0,y:0}, imageSrc:'Images/background2.png',width: 1950,height: 1300,upscale:4})
+const stillWaterBackground = new Map({position: {x:0,y:0}, imageSrc:'Images/background3.png',width: 1950,height: 1300,upscale:4})
+const waterBackground = new Map({position: {x:0,y:0}, imageSrc:'Images/backgroundWater.png',width: 1950,height: 1300,upscale:4})
 
 const player = new SwordFighter({position: {x: 0, y: 0}, velocity: {x:0, y:0}, map: background})
 
@@ -105,12 +108,13 @@ function shortestPathToCircleCenter(circle, rect) {
     };
 }
 
-//THIS METHOD IN INDEX DOES A BUNCH OF SHIT. ONE OF THOSE THINGS IS ADJUST THE VELOCITY OF THE PLAYER
-//BASED ON THE LAST PRESSED KEY.
 function animate(){
     c.fillStyle = "black"
     c.fillRect(0,0,canvas.width,canvas.height)
-    background.draw({position: {x:camera.x, y:camera.y}})
+    //background.draw({position: {x:camera.x, y:camera.y}})
+    grassBackground.draw({position: {x:camera.x, y:camera.y}})
+    //stillWaterBackground.draw({position: {x:camera.x, y:camera.y}})
+    //waterBackground.animateMap({position: {x:camera.x, y:camera.y},start:14,max:49,slowdown:7})
 
     player.move(keys);
     //Update each object
@@ -174,7 +178,11 @@ window.addEventListener('keydown', (event) =>{
                 break
             }
         case 'q':
+            console.log('q')
             if(!event.repeat){
+                if(player.animCount>30){
+                    player.animCount=0
+                }
                 player.setStrikePoint()
                 break
             }

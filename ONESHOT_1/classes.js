@@ -223,8 +223,6 @@ class SwordFighter{
                 this.imageFox.src="Images/IsSetting.png"
                 this.animateSwordFighter(7,49,0,this.animationScale)
             }else{
-                console.log('running', this.isRunning)
-                console.log('debuff', speedDebuff)
                 if(this.isRunning){
                     if(this.facing=='S'){
                         this.imageFox.src="Images/RunFoxS.png"
@@ -310,7 +308,7 @@ class SwordFighter{
         if(this.strikeRecency>0){
             this.strikeRecency-=0.1
         }
-
+        
         //Set velocity to 0 if player would be passed boundary on next frame, or if the player is in lag for something
         if(this.position.y + this.height*this.animationScale+this.velocity.y >= this.mapHeight||(this.position.y+this.velocity.y<= 0)){
             this.velocity.y=0
@@ -329,6 +327,7 @@ class SwordFighter{
                 speedDebuff=5
             }
         }
+        console.log('DEBUFF',speedDebuff)
 
         //add velocity to the position
         this.position.y += this.velocity.y
@@ -407,7 +406,11 @@ class SwordFighter{
             speedDebuff = 0
         } else if(this.previousFacing != this.facing){
             speedDebuff = 0
-        }        
+        }
+
+        if(this.strikeRecency>0){
+            speedDebuff+=this.strikeRecency
+        }
 
         player.velocity.x = 0
         player.velocity.y = 0

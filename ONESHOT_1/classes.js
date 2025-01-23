@@ -117,6 +117,7 @@ class SwordFighter{
         
         //Attributes
         this.isSetting = false
+        this.isParrying = false
         this.point = null;
         this.isRunning = false
         this.facing = 'S'
@@ -158,12 +159,15 @@ class SwordFighter{
     }
 
     drawCloud(scaling){
-        this.traceDrawn=true
-        if(this.facing!='N'){
-            if(speedDebuff<2&&this.isRunning){
+        if(this.traceDrawn==false){
+            this.traceDrawn=true
+            if(speedDebuff<3&&this.isRunning){
                 if(this.facing=='S'){
                     this.imageCloud.src="Images/DashTraceS.png"
                     c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x,this.position.y + camera.y - this.height,50*scaling,50*scaling)
+                } else if(this.facing=='N'){
+                    this.imageCloud.src="Images/DashTraceN.png"
+                    c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x,this.position.y + camera.y + this.height ,50*scaling,50*scaling)
                 } else if(this.facing=='W'){
                     this.imageCloud.src="Images/DashTraceW.png"
                     c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x+this.width, this.position.y + camera.y, 50 * scaling, 50 * scaling);
@@ -171,24 +175,18 @@ class SwordFighter{
                     this.imageCloud.src = "Images/DashTraceE.png"
                     c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x-this.width,this.position.y + camera.y,50*scaling,50*scaling)
                 } else if (this.facing == 'NE') {
-                    //this.imageCloud.src = "Images/DashTraceNE.png";
-                    //c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x - this.width/2, this.position.y + camera.y + this.height/4, 50 * scaling, 50 * scaling);
+                    this.imageCloud.src = "Images/DashTraceNE.png";
+                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x - this.width/1.5, this.position.y + camera.y + this.height/2, 50 * scaling, 50 * scaling);
                 } else if (this.facing == 'NW') {
-                    //this.imageCloud.src = "Images/DashTraceNW.png";
-                    //c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x + this.width/2, this.position.y + camera.y + this.height/4, 50 * scaling, 50 * scaling);
+                    this.imageCloud.src = "Images/DashTraceNW.png";
+                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x + this.width/1.5, this.position.y + camera.y + this.height/2, 50 * scaling, 50 * scaling);
                 } else if (this.facing == 'SE') {
                     this.imageCloud.src = "Images/DashTraceSE.png";
-                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + 
-                        camera.x - this.width/2, this.position.y + camera.y - this.height/4, 50 * scaling, 50 * scaling);
+                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x - this.width/1.5, this.position.y + camera.y - this.height/2, 50 * scaling, 50 * scaling);
                 } else if (this.facing == 'SW') {
                     this.imageCloud.src = "Images/DashTraceSW.png";
-                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x + this.width/2, this.position.y + camera.y - this.height/4, 50 * scaling, 50 * scaling);
+                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x + this.width/1.5, this.position.y + camera.y - this.height/2, 50 * scaling, 50 * scaling);
                 }
-            }
-        } else{
-            if(speedDebuff<2){
-                this.imageCloud.src="Images/DashTraceN.png"
-                c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x,this.position.y + camera.y + this.height ,50*scaling,50*scaling)
             }
         }
     }
@@ -216,7 +214,12 @@ class SwordFighter{
             this.imageFox.src="Images/StrikeFoxSanim.png"
             this.animateSwordFighter(4,12,0,this.animationScale)
         } else{
-            if(this.isSetting){
+            if(this.isParrying){
+                console.log("PARRY")
+                this.imageFox.src="Images/ParryFoxW.png"
+                this.animateSwordFighter(3,12,0,this.animationScale)
+            }
+            else if(this.isSetting){
                 this.imageFox.src="Images/IsSetting.png"
                 this.animateSwordFighter(7,49,0,this.animationScale)
             }else{
@@ -318,6 +321,9 @@ class SwordFighter{
         if(this.strikeRecency>this.strikeLag){
             this.velocity.x=0
             this.velocity.y=0
+        }
+        if(this.isParrying){
+            speedDebuff=10
         }
 
         //add velocity to the position
@@ -428,7 +434,7 @@ class SwordFighter{
     setStrikePoint() {
         //Make sure he isin't already setting, so you can't cancel one set with another.
         //The animation isin't very long to begin with but it's just a small delay so you can't instantly readjust
-        if(!this.isSetting){
+        if(!this.isSetting&&!this.isParrying){
             this.isSetting = true
             //the "-7s" here are to offset the top corner of the screen, which is just occupied by whitespace. I might need to actually deal with this in HTML/CSS later, make the game fullscreen offrip or something, since that white space may or may not be different            this.point = new StrikePoint({position: {x: mouseX -7, y: mouseY-7},ownerFighter:this.self})
             this.point = new StrikePoint({position: {x: mouseX -canvasOffsetX, y: mouseY-64},ownerFighter:this.self})
@@ -436,6 +442,21 @@ class SwordFighter{
             setTimeout(()=>{
                 this.isSetting=false
             }, 500)
+        }
+    }
+
+    parry() {
+        //If the player is in a strike recency, they can't parry
+        if(!this.isSetting&&!this.recentParry){
+            this.isParrying = true
+            this.recentParry = true;
+            //logic for parrying
+            setTimeout(()=>{
+                this.isParrying=false
+            }, 150)
+            setTimeout(()=>{
+                this.recentParry=false
+            }, 3000)
         }
     }
 }

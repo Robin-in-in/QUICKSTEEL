@@ -186,6 +186,13 @@ window.addEventListener('keydown', (event) =>{
                 player.setStrikePoint()
                 break
             }
+        case 'e':
+            console.log('e')
+            if(!event.repeat){
+                player.animCount=0
+                player.parry()
+                break
+            }
     }
 })
 

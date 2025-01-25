@@ -16,6 +16,16 @@ const canvasOffsetY = (screenHeight-canvas.height)/2
 c.fillRect(0,0, canvas.width, canvas.height)
 //0,0 is topleft
 
+let parry1 = new Audio("Sounds/fox_parry_1.mp3")
+let parry2 = new Audio("Sounds/fox_parry_2.mp3")
+let parry3 = new Audio("Sounds/fox_parry_3.mp3")
+let slash1 = new Audio("Sounds/fox_slash_1.mp3")
+let slash2 = new Audio("Sounds/fox_slash_2.mp3")
+let slash3 = new Audio("Sounds/fox_slash_3.mp3")
+let backgroundWind = new Audio("Sounds/backgroundWind.mp3")
+backgroundWind.loop = true
+backgroundWind.play()
+
 
 
 

@@ -27,6 +27,17 @@ class StrikePoint{
     strike() {
         this.fighter.position.x = this.truePosX-(this.fighter.width*this.fighter.animationScale/2)
         this.fighter.position.y = this.truePosY-(this.fighter.height*this.fighter.animationScale/2)
+        let randomOutcome = Math.floor(Math.random()*3)
+        if(randomOutcome==0){
+            slash1.volume=0.7
+            slash1.play()
+        } else if(randomOutcome==1){
+            slash2.volume=0.7
+            slash2.play()
+        } else if(randomOutcome==2){
+            slash3.volume=0.7
+            slash3.play()
+        }
     }
 }
 
@@ -59,10 +70,10 @@ class Map{
         if(this.animCount>=max){
             this.animCount=start
         }
-        console.log("max", max)
-        console.log("start", start)
-        console.log("mapAnimCount:", this.animCount)
-        console.log("Map positionX", position.x)
+        //console.log("max", max)
+        //console.log("start", start)
+        //console.log("mapAnimCount:", this.animCount)
+        //console.log("Map positionX", position.x)
         this.position=position
         c.drawImage(this.mapImage,488*(Math.floor(this.animCount/slowdown)),0,this.width/this.upscale,this.height/this.upscale,this.position.x,this.position.y,this.width,this.height)
         this.animCount+=1
@@ -140,7 +151,7 @@ class SwordFighter{
 
         //Strike Attributes
         this.strikeRecency = 0
-        this.strikeLag = 0.5
+        this.strikeLag = 0.7
         this.opacityRemovalRate = 0.1
 
         //All of these are to create the vectors necessary to adjust the position of the strike trace thing on screen
@@ -161,32 +172,35 @@ class SwordFighter{
     drawCloud(scaling){
         if(this.traceDrawn==false){
             this.traceDrawn=true
-            if(speedDebuff<3&&this.isRunning){
+            if(speedDebuff<3&&this.isRunning&&this.strikeRecency<=0){
+            //if(true){
                 if(this.facing=='S'){
                     this.imageCloud.src="Images/DashTraceS.png"
                     c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x,this.position.y + camera.y - this.height,50*scaling,50*scaling)
                 } else if(this.facing=='N'){
                     this.imageCloud.src="Images/DashTraceN.png"
-                    c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x,this.position.y + camera.y + this.height ,50*scaling,50*scaling)
+                    c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x,this.position.y + camera.y + this.height, 50*scaling,50*scaling)
                 } else if(this.facing=='W'){
                     this.imageCloud.src="Images/DashTraceW.png"
-                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x+this.width, this.position.y + camera.y, 50 * scaling, 50 * scaling);
+                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x+this.width/1.4, this.position.y + camera.y,50 * scaling,50 * scaling);
                 } else if (this.facing == 'E') {
                     this.imageCloud.src = "Images/DashTraceE.png"
-                    c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x-this.width,this.position.y + camera.y,50*scaling,50*scaling)
+                    c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x-this.width/1.4,this.position.y + camera.y,50*scaling,50*scaling)
                 } else if (this.facing == 'NE') {
                     this.imageCloud.src = "Images/DashTraceNE.png";
-                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x - this.width/1.5, this.position.y + camera.y + this.height/2, 50 * scaling, 50 * scaling);
+                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x - this.width/1.8, this.position.y + camera.y + this.height/2, 50 * scaling, 50 * scaling);
                 } else if (this.facing == 'NW') {
                     this.imageCloud.src = "Images/DashTraceNW.png";
-                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x + this.width/1.5, this.position.y + camera.y + this.height/2, 50 * scaling, 50 * scaling);
+                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x + this.width/1.8, this.position.y + camera.y + this.height/2, 50 * scaling, 50 * scaling);
                 } else if (this.facing == 'SE') {
                     this.imageCloud.src = "Images/DashTraceSE.png";
-                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x - this.width/1.5, this.position.y + camera.y - this.height/2, 50 * scaling, 50 * scaling);
+                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x - this.width/1.8, this.position.y + camera.y - this.height/2, 50 * scaling, 50 * scaling);
                 } else if (this.facing == 'SW') {
                     this.imageCloud.src = "Images/DashTraceSW.png";
-                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x + this.width/1.5, this.position.y + camera.y - this.height/2, 50 * scaling, 50 * scaling);
+                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x + this.width/1.8, this.position.y + camera.y - this.height/2, 50 * scaling, 50 * scaling);
                 }
+                //For drawing shadow uncomment this line and comment out the other c.drawImage line and uncomment the unconditional if statement above
+                //c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x,this.position.y + camera.y - this.height/3,50*scaling,50*scaling)
             }
         }
     }
@@ -216,8 +230,8 @@ class SwordFighter{
         } else{
             if(this.isParrying){
                 console.log("PARRY")
-                this.imageFox.src="Images/ParryFoxW.png"
-                this.animateSwordFighter(3,12,0,this.animationScale)
+                this.imageFox.src="Images/ParryFoxFull.png"
+                this.animateSwordFighter(4,16,0,this.animationScale)
             }
             else if(this.isSetting){
                 this.imageFox.src="Images/IsSetting.png"
@@ -323,8 +337,8 @@ class SwordFighter{
         if(this.isParrying){
             speedDebuff=10
         } else if(this.recentParry){
-            if(speedDebuff<5){
-                speedDebuff=5
+            if(speedDebuff<4){
+                speedDebuff=4
             }
         }
         console.log('DEBUFF',speedDebuff)
@@ -399,18 +413,21 @@ class SwordFighter{
         //Logic for decreasing speed of player after initial movement 
         // Get the currentMovementKey from the last of the pressed keys array
         this.currentMovementKey = keysPressed[keysPressed.length - 1]
-        
-        if((this.previousFacing === this.facing) && (speedDebuff < 7.5)){
-            speedDebuff += 0.6
-        } else if(this.previousFacing == this.facing&&this.previousMovementKey!=this.currentMovementKey){
-            speedDebuff = 0
-        } else if(this.previousFacing != this.facing){
-            speedDebuff = 0
-        }
-
         if(this.strikeRecency>0){
-            speedDebuff+=this.strikeRecency
+            speedDebuff=-(this.strikeRecency)*10
         }
+        else{
+            if((this.previousFacing === this.facing) && (speedDebuff < 7.5)){
+                speedDebuff += 0.6
+            } else if(this.previousFacing == this.facing&&this.previousMovementKey!=this.currentMovementKey){
+                speedDebuff = 0
+            } else if(this.previousFacing != this.facing){
+                speedDebuff = 0
+            }
+        }
+        
+
+        
 
         player.velocity.x = 0
         player.velocity.y = 0
@@ -459,10 +476,18 @@ class SwordFighter{
         if(!this.isSetting&&!this.recentParry){
             this.isParrying = true
             this.recentParry = true;
+            let randomOutcome = Math.floor(Math.random()*3)
+            if(randomOutcome==0){
+                parry1.play()
+            } else if(randomOutcome==1){
+                parry2.play()
+            } else if(randomOutcome==2){
+                parry3.play()
+            }
             //logic for parrying
             setTimeout(()=>{
                 this.isParrying=false
-            }, 150)
+            }, 250)
             setTimeout(()=>{
                 this.recentParry=false
             }, 2000)

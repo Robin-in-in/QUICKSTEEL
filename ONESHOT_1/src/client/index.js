@@ -200,8 +200,8 @@ window.addEventListener('keydown', (event) =>{
                 }
                 break
             }
-        case ' ':
-            console.log('space')
+        case 'q':
+            console.log('q')
             if(!event.repeat){
                 if(player.animCount>30){
                     player.animCount=0

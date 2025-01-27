@@ -493,7 +493,7 @@ class SwordFighter{
     parry() {
         //If the player is in a strike recency, they can't parry
         if(!this.isSetting&&!this.recentParry){
-
+            console.log("PARRYING", this.recentParry)
             set.pause();
             set.currentTime = 0;
             parry1.pause();

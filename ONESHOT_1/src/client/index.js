@@ -24,6 +24,7 @@ let parry3 = new Audio("../../../public/assets/sounds/fox_parry_3.mp3")
 let slash1 = new Audio("../../../public/assets/sounds/fox_slash_1.mp3")
 let slash2 = new Audio("../../../public/assets/sounds/fox_slash_2.mp3")
 let slash3 = new Audio("../../../public/assets/sounds/fox_slash_3.mp3")
+let set = new Audio("../../../public/assets/sounds/fox_set_1.mp3")
 let backgroundWind = new Audio("../../../public/assets/sounds/backgroundWind.mp3")
 backgroundWind.loop = true
 backgroundWind.play()
@@ -152,6 +153,16 @@ window.addEventListener('mousemove', (event) => {
     mouseY = event.clientY;
 });
 
+// Detect left-click
+window.addEventListener('mousedown', (event) => {
+    if (event.button === 0) { // 0 is the code for the left mouse button
+        console.log('left click');
+        if (player.animCount > 30) {
+            player.animCount = 0;
+        }
+        player.setStrikePoint();
+    }
+});
 
 //Tracks which key was last pressed
 window.addEventListener('keydown', (event) =>{
@@ -189,8 +200,8 @@ window.addEventListener('keydown', (event) =>{
                 }
                 break
             }
-        case 'q':
-            console.log('q')
+        case ' ':
+            console.log('space')
             if(!event.repeat){
                 if(player.animCount>30){
                     player.animCount=0

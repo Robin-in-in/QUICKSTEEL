@@ -30,12 +30,15 @@ class StrikePoint{
         let randomOutcome = Math.floor(Math.random()*3)
         if(randomOutcome==0){
             slash1.volume=0.7
+            slash1.currentTime = 0;
             slash1.play()
         } else if(randomOutcome==1){
             slash2.volume=0.7
+            slash2.currentTime = 0;
             slash2.play()
         } else if(randomOutcome==2){
             slash3.volume=0.7
+            slash3.currentTime = 0;
             slash3.play()
         }
     }
@@ -240,8 +243,7 @@ class SwordFighter{
                 if(this.isRunning){
                     if(this.facing=='S'){
                         this.imageFox.src="../../../public/assets/images/RunFoxS.png"
-                        this.animateSwordFighter(10,30,0,this.animationScale)    
-                        this.drawCloud(this.animationScale)
+                        this.animateSwordFighter(10,30,0,this.animationScale)   
                     } else if(this.facing=='SW'){
                         this.imageFox.src="../../../public/assets/images/RunFoxSW.png"
                         this.animateSwordFighter(10,40,20,this.animationScale)
@@ -390,6 +392,8 @@ class SwordFighter{
         //If he is then strike. (See the method for comments on what it does)
         if(this.point){
             if(detectCircleFighterCollision(this.point.truePosX,this.point.truePosY,this.point.radius, this)&&!this.isSetting){
+
+
                 console.log("IN CIRCLE", true)
                 this.preStrikeX=this.position.x+camera.x
                 this.preStrikeY=this.position.y+camera.y
@@ -462,6 +466,21 @@ class SwordFighter{
         //The animation isin't very long to begin with but it's just a small delay so you can't instantly readjust
         if(!this.isSetting&&!this.isParrying){
             this.isSetting = true
+
+            //Play random set sound
+            set.currentTime = 0;
+            set.volume = 0.65;
+            let randomOutcome = Math.floor(Math.random()*3)
+            if(randomOutcome==0){
+                set.src="../../../public/assets/sounds/fox_set_1.mp3"
+            } else if(randomOutcome==1){
+                set.src="../../../public/assets/sounds/fox_set_2.mp3"
+            } else if(randomOutcome==2){
+                set.src="../../../public/assets/sounds/fox_set_3.mp3"
+            }
+            set.play()
+
+
             //the "-7s" here are to offset the top corner of the screen, which is just occupied by whitespace. I might need to actually deal with this in HTML/CSS later, make the game fullscreen offrip or something, since that white space may or may not be different            this.point = new StrikePoint({position: {x: mouseX -7, y: mouseY-7},ownerFighter:this.self})
             this.point = new StrikePoint({position: {x: mouseX -canvasOffsetX, y: mouseY-64},ownerFighter:this.self})
             //This is the delay, 0.5 seconds before the tag (this.isSetting) becomes false
@@ -474,6 +493,16 @@ class SwordFighter{
     parry() {
         //If the player is in a strike recency, they can't parry
         if(!this.isSetting&&!this.recentParry){
+
+            set.pause();
+            set.currentTime = 0;
+            parry1.pause();
+            parry1.currentTime = 0;
+            parry2.pause();
+            parry2.currentTime = 0;
+            parry3.pause();
+            parry3.currentTime = 0;
+
             this.isParrying = true
             this.recentParry = true;
             let randomOutcome = Math.floor(Math.random()*3)

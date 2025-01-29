@@ -121,23 +121,33 @@ function shortestPathToCircleCenter(circle, rect) {
     };
 }
 
-function animate(){
-    c.fillStyle = "black"
-    c.fillRect(0,0,canvas.width,canvas.height)
-    //background.draw({position: {x:camera.x, y:camera.y}})
-    grassBackground.draw({position: {x:camera.x, y:camera.y}})
-    //stillWaterBackground.draw({position: {x:camera.x, y:camera.y}})
-    //waterBackground.animateMap({position: {x:camera.x, y:camera.y},start:14,max:49,slowdown:7})
+let lastTime = 0;
+const targetFPS = 60;
+const frameDuration = 1000 / targetFPS;
 
-    player.move(keys);
-    //Update each object
-    player.update();
-    camera.update();
+function animate(timestamp){
+    if (!lastTime) lastTime = timestamp;
+    const deltaTime = timestamp - lastTime;
+  
+    if (deltaTime >= frameDuration) {
+      lastTime = timestamp - (deltaTime % frameDuration);
 
-    if(player.point){
-        player.point.update();
+        c.fillStyle = "black"
+        c.fillRect(0,0,canvas.width,canvas.height)
+        //background.draw({position: {x:camera.x, y:camera.y}})
+        grassBackground.draw({position: {x:camera.x, y:camera.y}})
+        //stillWaterBackground.draw({position: {x:camera.x, y:camera.y}})
+        //waterBackground.animateMap({position: {x:camera.x, y:camera.y},start:14,max:49,slowdown:7})
+
+        player.move(keys);
+        //Update each object
+        player.update();
+        camera.update();
+
+        if(player.point){
+            player.point.update();
+        }
     }
-
     window.requestAnimationFrame(animate);
 }
 

@@ -1,0 +1,42 @@
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>ONESHOT</title>
+        <!-- <link rel="stylesheet" href="../css/style.css"/> -->
+        <style>
+            body {
+                padding: 4rem;
+                display: flex;
+                justify-content: start;
+                align-items: center;
+                flex-direction: column;
+                background-image: url("assets/webAssets/bg.jpg");
+            }
+            
+
+            .canvas {
+                border: solid 4px wheat;
+            }
+
+            .instructions {
+                font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+                    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+                font-weight: bold;
+                font-size: 1.5em;
+                color: wheat;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas class="canvas"></canvas>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js" integrity="sha512-8BHxHDLsOHx+flIrQ0DrZcea7MkHqRU5GbTHmbdzMRnAaoCIkZ97PqZcXJkKZckMMhqfoeaJE+DNUVuyoQsO3Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        
+        <script src="js/client.js"></script>
+        <script src="js/classes.js"></script>
+        <script src="js/index.js"></script>
+        <p class="instructions">
+            'Q/Left-Click' to set a target. 'E' to parry. 'W', 'A', 'S', and
+            'D' to move.
+        </p>
+    </body>
+</html>

@@ -18,14 +18,14 @@ c.fillRect(0,0, canvas.width, canvas.height)
 
 
 //List all audio files here which 
-let parry1 = new Audio("../../../public/assets/sounds/fox_parry_1.mp3")
-let parry2 = new Audio("../../../public/assets/sounds/fox_parry_2.mp3")
-let parry3 = new Audio("../../../public/assets/sounds/fox_parry_3.mp3")
-let slash1 = new Audio("../../../public/assets/sounds/fox_slash_1.mp3")
-let slash2 = new Audio("../../../public/assets/sounds/fox_slash_2.mp3")
-let slash3 = new Audio("../../../public/assets/sounds/fox_slash_3.mp3")
-let set = new Audio("../../../public/assets/sounds/fox_set_1.mp3")
-let backgroundWind = new Audio("../../../public/assets/sounds/backgroundWind.mp3")
+let parry1 = new Audio("../assets/sounds/fox_parry_1.mp3")
+let parry2 = new Audio("../assets/sounds/fox_parry_2.mp3")
+let parry3 = new Audio("../assets/sounds/fox_parry_3.mp3")
+let slash1 = new Audio("../assets/sounds/fox_slash_1.mp3")
+let slash2 = new Audio("../assets/sounds/fox_slash_2.mp3")
+let slash3 = new Audio("../assets/sounds/fox_slash_3.mp3")
+let set = new Audio("../assets/sounds/fox_set_1.mp3")
+let backgroundWind = new Audio("../assets/sounds/backgroundWind.mp3")
 backgroundWind.loop = true
 backgroundWind.play()
 
@@ -33,10 +33,10 @@ backgroundWind.play()
 
 
 
-const background = new Map({position: {x:0,y:0}, imageSrc:'../../../public/assets/images/background.jpg',width: 1950,height: 1300,upscale:1})
-const grassBackground = new Map({position: {x:0,y:0}, imageSrc:'../../../public/assets/images/background2.png',width: 1950,height: 1300,upscale:4})
-const stillWaterBackground = new Map({position: {x:0,y:0}, imageSrc:'../../../public/assets/images/background3.png',width: 1950,height: 1300,upscale:4})
-const waterBackground = new Map({position: {x:0,y:0}, imageSrc:'../../../public/assets/images/backgroundWater.png',width: 1950,height: 1300,upscale:4})
+const background = new Map({position: {x:0,y:0}, imageSrc:'../assets/images/background.jpg',width: 1950,height: 1300,upscale:1})
+const grassBackground = new Map({position: {x:0,y:0}, imageSrc:'../assets/images/background2.png',width: 1950,height: 1300,upscale:4})
+const stillWaterBackground = new Map({position: {x:0,y:0}, imageSrc:'../assets/images/background3.png',width: 1950,height: 1300,upscale:4})
+const waterBackground = new Map({position: {x:0,y:0}, imageSrc:'../assets/images/backgroundWater.png',width: 1950,height: 1300,upscale:4})
 
 const player = new SwordFighter({position: {x: 0, y: 0}, velocity: {x:0, y:0}, map: background})
 

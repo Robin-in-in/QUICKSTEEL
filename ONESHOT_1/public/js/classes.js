@@ -9,7 +9,7 @@ class StrikePoint{
         this.initialCamX=camera.x
         this.initialCamY=camera.y
         this.strikeCircle = new Image()
-        this.strikeCircle.src = "../../../public/assets/images/StrikePoint.png"
+        this.strikeCircle.src = "../assets/images/StrikePoint.png"
         this.scaling=1.2
         this.fighter=ownerFighter
     }
@@ -144,13 +144,13 @@ class SwordFighter{
         this.animLayer=0
         this.animSlowdown=0
         this.imageFox=new Image()
-        this.imageFox.src="../../../public/assets/images/IdleFoxS.png"
+        this.imageFox.src="../assets/images/IdleFoxS.png"
         
         //Cloud Animation
         this.traceDrawn=false
         this.cloudAnimCount=0
         this.imageCloud=new Image()
-        this.imageCloud.src="../../../public/assets/images/DashCloud.png"
+        this.imageCloud.src="../assets/images/DashCloud.png"
 
         //Strike Attributes
         this.strikeRecency = 0
@@ -178,29 +178,29 @@ class SwordFighter{
             if(speedDebuff<3&&this.isRunning&&this.strikeRecency<=0){
             //if(true){
                 if(this.facing=='S'){
-                    this.imageCloud.src="../../../public/assets/images/DashTraceS.png"
-                    c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x,this.position.y + camera.y - this.height,50*scaling,50*scaling)
+                    this.imageCloud.src="../assets/images/DashTraceS.png"
+                    c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x,this.position.y + camera.y - this.height/2,50*scaling,50*scaling)
                 } else if(this.facing=='N'){
-                    this.imageCloud.src="../../../public/assets/images/DashTraceN.png"
+                    this.imageCloud.src="../assets/images/DashTraceN.png"
                     c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x,this.position.y + camera.y + this.height, 50*scaling,50*scaling)
                 } else if(this.facing=='W'){
-                    this.imageCloud.src="../../../public/assets/images/DashTraceW.png"
-                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x+this.width/1.4, this.position.y + camera.y,50 * scaling,50 * scaling);
+                    this.imageCloud.src="../assets/images/DashTraceW.png"
+                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x+this.width/2, this.position.y + camera.y,50 * scaling,50 * scaling);
                 } else if (this.facing == 'E') {
-                    this.imageCloud.src = "../../../public/assets/images/DashTraceE.png"
-                    c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x-this.width/1.4,this.position.y + camera.y,50*scaling,50*scaling)
+                    this.imageCloud.src = "../assets/images/DashTraceE.png"
+                    c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x-this.width/2,this.position.y + camera.y,50*scaling,50*scaling)
                 } else if (this.facing == 'NE') {
-                    this.imageCloud.src = "../../../public/assets/images/DashTraceNE.png";
-                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x - this.width/1.8, this.position.y + camera.y + this.height/2, 50 * scaling, 50 * scaling);
+                    this.imageCloud.src = "../assets/images/DashTraceNE.png";
+                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x - this.width/2.5, this.position.y + camera.y + this.height/2, 50 * scaling, 50 * scaling);
                 } else if (this.facing == 'NW') {
-                    this.imageCloud.src = "../../../public/assets/images/DashTraceNW.png";
-                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x + this.width/1.8, this.position.y + camera.y + this.height/2, 50 * scaling, 50 * scaling);
+                    this.imageCloud.src = "../assets/images/DashTraceNW.png";
+                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x + this.width/2.5, this.position.y + camera.y + this.height/2, 50 * scaling, 50 * scaling);
                 } else if (this.facing == 'SE') {
-                    this.imageCloud.src = "../../../public/assets/images/DashTraceSE.png";
-                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x - this.width/1.8, this.position.y + camera.y - this.height/2, 50 * scaling, 50 * scaling);
+                    this.imageCloud.src = "../assets/images/DashTraceSE.png";
+                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x - this.width/2.5, this.position.y + camera.y - this.height/2, 50 * scaling, 50 * scaling);
                 } else if (this.facing == 'SW') {
-                    this.imageCloud.src = "../../../public/assets/images/DashTraceSW.png";
-                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x + this.width/1.8, this.position.y + camera.y - this.height/2, 50 * scaling, 50 * scaling);
+                    this.imageCloud.src = "../assets/images/DashTraceSW.png";
+                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x + this.width/2.5, this.position.y + camera.y - this.height/2, 50 * scaling, 50 * scaling);
                 }
                 //For drawing shadow uncomment this line and comment out the other c.drawImage line and uncomment the unconditional if statement above
                 //c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x,this.position.y + camera.y - this.height/3,50*scaling,50*scaling)
@@ -228,57 +228,57 @@ class SwordFighter{
         //SECOND These are all the animations related to the actual player
         //Hierarchy: Striking > Setting > Running > Idle
         if(this.strikeRecency>0){
-            this.imageFox.src="../../../public/assets/images/StrikeFoxSanim.png"
+            this.imageFox.src="../assets/images/StrikeFoxSanim.png"
             this.animateSwordFighter(4,12,0,this.animationScale)
         } else{
             if(this.isParrying){
                 console.log("PARRY")
-                this.imageFox.src="../../../public/assets/images/ParryFoxFull.png"
+                this.imageFox.src="../assets/images/ParryFoxFull.png"
                 this.animateSwordFighter(4,16,0,this.animationScale)
             }
             else if(this.isSetting){
-                this.imageFox.src="../../../public/assets/images/IsSetting.png"
+                this.imageFox.src="../assets/images/IsSetting.png"
                 this.animateSwordFighter(7,49,0,this.animationScale)
             }else{
                 if(this.isRunning){
                     if(this.facing=='S'){
-                        this.imageFox.src="../../../public/assets/images/RunFoxS.png"
+                        this.imageFox.src="../assets/images/RunFoxS.png"
                         this.animateSwordFighter(10,30,0,this.animationScale)   
                     } else if(this.facing=='SW'){
-                        this.imageFox.src="../../../public/assets/images/RunFoxSW.png"
+                        this.imageFox.src="../assets/images/RunFoxSW.png"
                         this.animateSwordFighter(10,40,20,this.animationScale)
                     } else if(this.facing=='SE'){
-                        this.imageFox.src="../../../public/assets/images/RunFoxSE.png"
+                        this.imageFox.src="../assets/images/RunFoxSE.png"
                         this.animateSwordFighter(10,40,20,this.animationScale)
                     }else if(this.facing=='N'){
-                        this.imageFox.src="../../../public/assets/images/RunFoxNsheet.png"
+                        this.imageFox.src="../assets/images/RunFoxNsheet.png"
                         this.animateSwordFighter(10,20,0,this.animationScale)
                         
                     } else if(this.facing=='NE'){
-                        this.imageFox.src="../../../public/assets/images/RunFoxNE.png"
+                        this.imageFox.src="../assets/images/RunFoxNE.png"
                         this.animateSwordFighter(10,40,20,this.animationScale)
                     }else if(this.facing=='NW'){
-                        this.imageFox.src="../../../public/assets/images/RunFoxNW.png"
+                        this.imageFox.src="../assets/images/RunFoxNW.png"
                         this.animateSwordFighter(10,40,20,this.animationScale)
                     }else if(this.facing=='W'){
-                        this.imageFox.src="../../../public/assets/images/RunFoxW.png"
+                        this.imageFox.src="../assets/images/RunFoxW.png"
                         this.animateSwordFighter(10,20,0,this.animationScale)
                     } else if(this.facing=='E'){
-                        this.imageFox.src="../../../public/assets/images/RunFoxE.png"
+                        this.imageFox.src="../assets/images/RunFoxE.png"
                         this.animateSwordFighter(10,20,0,this.animationScale)
                     }
                 } else{
                     if(this.facing=='S'){
-                        this.imageFox.src="../../../public/assets/images/IdleFoxS.png"
+                        this.imageFox.src="../assets/images/IdleFoxS.png"
                         this.animateSwordFighter(10,20,0,this.animationScale)
                     } else if(this.facing=='N'){
-                        this.imageFox.src="../../../public/assets/images/IdleFoxN.png"
+                        this.imageFox.src="../assets/images/IdleFoxN.png"
                         this.animateSwordFighter(10,20,0,this.animationScale)
                     } else if(this.facing=='W'){
-                        this.imageFox.src="../../../public/assets/images/IdleFoxW.png"
+                        this.imageFox.src="../assets/images/IdleFoxW.png"
                         this.animateSwordFighter(10,60,0,this.animationScale)
                     } else if(this.facing=='E'){
-                        this.imageFox.src="../../../public/assets/images/IdleFoxE.png"
+                        this.imageFox.src="../assets/images/IdleFoxE.png"
                         this.animateSwordFighter(10,20,0,this.animationScale)
                     }
                 }
@@ -472,11 +472,11 @@ class SwordFighter{
             set.volume = 0.65;
             let randomOutcome = Math.floor(Math.random()*3)
             if(randomOutcome==0){
-                set.src="../../../public/assets/sounds/fox_set_1.mp3"
+                set.src="../assets/sounds/fox_set_1.mp3"
             } else if(randomOutcome==1){
-                set.src="../../../public/assets/sounds/fox_set_2.mp3"
+                set.src="../assets/sounds/fox_set_2.mp3"
             } else if(randomOutcome==2){
-                set.src="../../../public/assets/sounds/fox_set_3.mp3"
+                set.src="../assets/sounds/fox_set_3.mp3"
             }
             set.play()
 

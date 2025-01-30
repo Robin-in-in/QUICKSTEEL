@@ -7,10 +7,10 @@ const { join } = require('node:path');
 const server = createServer(app);
 
 // Serve static files from the 'public' directory
-//app.use(express.static(join(__dirname, '../../public')));
+app.use(express.static(join('public')));
 
 app.get('/', (req, res) => {
-    res.sendFile(join(__dirname, '../client/html/index.html'));
+    res.sendFile(join(__dirname, 'public/index.html'));
 });
 
 server.listen(port, () => {

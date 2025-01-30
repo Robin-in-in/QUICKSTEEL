@@ -1,48 +1,10 @@
-const canvas = document.querySelector('canvas')
-const c = canvas.getContext('2d')
-//Usually bad practice to have short names but this is so reused
 
 
-canvas.width = 1024
-canvas.height = 576
-
-
-const screenWidth = window.innerWidth;
-const screenHeight = window.innerHeight;
-
-const canvasOffsetX = (screenWidth-canvas.width)/2
-const canvasOffsetY = (screenHeight-canvas.height)/2
-
-c.fillRect(0,0, canvas.width, canvas.height)
-//0,0 is topleft
-
-
-//List all audio files here which 
-let parry1 = new Audio("../assets/sounds/fox_parry_1.mp3")
-let parry2 = new Audio("../assets/sounds/fox_parry_2.mp3")
-let parry3 = new Audio("../assets/sounds/fox_parry_3.mp3")
-let slash1 = new Audio("../assets/sounds/fox_slash_1.mp3")
-let slash2 = new Audio("../assets/sounds/fox_slash_2.mp3")
-let slash3 = new Audio("../assets/sounds/fox_slash_3.mp3")
-let set = new Audio("../assets/sounds/fox_set_1.mp3")
-let backgroundWind = new Audio("../assets/sounds/backgroundWind.mp3")
-backgroundWind.loop = true
-backgroundWind.play()
-
-
-
-
-
-const background = new Map({position: {x:0,y:0}, imageSrc:'../assets/images/background.jpg',width: 1950,height: 1300,upscale:1})
-const grassBackground = new Map({position: {x:0,y:0}, imageSrc:'../assets/images/background2.png',width: 1950,height: 1300,upscale:4})
-const stillWaterBackground = new Map({position: {x:0,y:0}, imageSrc:'../assets/images/background3.png',width: 1950,height: 1300,upscale:4})
-const waterBackground = new Map({position: {x:0,y:0}, imageSrc:'../assets/images/backgroundWater.png',width: 1950,height: 1300,upscale:4})
-
-const player = new SwordFighter({position: {x: 0, y: 0}, velocity: {x:0, y:0}, map: background})
-
+//TODO: Update this to create a new instance for each connected player. Will need to add an ID to the player class
+//Additionally each instance of camera will need to be coupled to a player instance
+const player = new SwordFighter({map: background})
 const camera = new Camera({swordFighter: player, mapWidth: background.width, mapHeight: background.height})
 
-//These are all the keys we're tracking
 const keys = {
     a: {
         pressed: false
@@ -66,15 +28,12 @@ let lastMovementKey
 let speedDebuff = 0;
 
 
-//Used to detect when the player collides with the StrikePoint radius
+//TODO: Probably better to make this as a function of StrikePoint
 function detectCircleFighterCollision(circleCenterX, circleCenterY, circleRadius, fighter) {
-    // Circle properties
     const centerX = circleCenterX;
     const centerY = circleCenterY;
     const radius = circleRadius;
 
-    console.log("CenterX",centerX)
-    // Fighter properties
     const fx = fighter.position.x;
     const fy = fighter.position.y;
     const fh = fighter.height*fighter.animationScale;
@@ -91,7 +50,7 @@ function detectCircleFighterCollision(circleCenterX, circleCenterY, circleRadius
     // Check if the distance is less than or equal to the radius
     return (distanceX ** 2 + distanceY ** 2) <= (radius ** 2)
 }
-
+/*
 //Not using this one as of now
 function shortestPathToCircleCenter(circle, rect) {
     // Circle properties
@@ -120,11 +79,13 @@ function shortestPathToCircleCenter(circle, rect) {
         magnitude: magnitude, // Length of the path
     };
 }
+*/
 
 let lastTime = 0;
 const targetFPS = 60;
 const frameDuration = 1000 / targetFPS;
 
+//TODO: Should probably move this to server
 function animate(timestamp){
     if (!lastTime) lastTime = timestamp;
     const deltaTime = timestamp - lastTime;
@@ -154,6 +115,8 @@ function animate(timestamp){
 
 animate()
 
+
+//TODO: Rest should be moved to client.js, it's all input detection. Biggest issue is figuring out player.animCount interaction. 
 let mouseX = 0;
 let mouseY = 0;
 

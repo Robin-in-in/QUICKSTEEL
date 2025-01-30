@@ -1,3 +1,8 @@
+const index = require('index.js');
+
+//List all background images here, drawn within draw loop
+const background = new Map({position: {x:0,y:0}, imageSrc:'../assets/images/background1',width: 1950,height: 1300,upscale:1})
+
 class StrikePoint{
     constructor({position, ownerFighter, color = 'blue'}){
         this.self = this
@@ -9,7 +14,7 @@ class StrikePoint{
         this.initialCamX=camera.x
         this.initialCamY=camera.y
         this.strikeCircle = new Image()
-        this.strikeCircle.src = "../assets/images/StrikePoint.png"
+        this.strikeCircle.src = "public/assets/images/StrikePoint.png"
         this.scaling=1.2
         this.fighter=ownerFighter
     }
@@ -85,41 +90,17 @@ class Map{
     update() {
         this.draw()
     }
-}
-
-
-//Dynamically adjusts the position of things on screen based of things 
-class Camera {
-    constructor({swordFighter, mapWidth, mapHeight}) {
-      this.fighter= swordFighter
-      this.mapWidth = mapWidth;
-      this.mapHeight = mapHeight;
-      this.x = (this.mapWidth/2);
-      this.y = (this.mapHeight/2);
-      this.smoothness = 0.5; // Adjust for desired smoothness
-    }
-  
-    update() {
-      // Calculate target position (center player on screen)
-      let targetX = -(this.fighter.position.x - (canvas.width / 2));
-      let targetY = -(this.fighter.position.y - (canvas.height / 2));
-
-      //Prevent the camera from moving off the map
-      targetX = Math.min(0, Math.max(targetX, -(this.mapWidth) + canvas.width));
-      targetY = Math.min(0, Math.max(targetY, -(this.mapHeight) + canvas.height));
-
-      // Smoothly move the camera
-      this.x += (targetX - this.x) * this.smoothness;
-      this.y += (targetY - this.y) * this.smoothness;
-    }
 }  
 
 class SwordFighter{
-    constructor({position, velocity, map}) {
+    constructor({playerID}) {
+        //TODO: Player animation and opacity stuff needs to be moved to some frontend swordfighter thing
+        //I think some opacity stuff is directly related to game logic so need to figure that out
+        //Need to move calculation of position velocity to this version of swordfighter, only need facing and input key list from client
         this.self=this
 
-        this.position = position
-        this.velocity = velocity
+        this.position = 0
+        this.velocity = 0
 
         //Map attributes needed so player doesn't leave boundaries
         this.mapWidth=map.width
@@ -136,26 +117,10 @@ class SwordFighter{
         this.isRunning = false
         this.facing = 'S'
 
-        //General Animation
-        this.animationScale=2.5
-
-        //Player Animation
-        this.animCount=0
-        this.animLayer=0
-        this.animSlowdown=0
-        this.imageFox=new Image()
-        this.imageFox.src="../assets/images/IdleFoxS.png"
-        
-        //Cloud Animation
-        this.traceDrawn=false
-        this.cloudAnimCount=0
-        this.imageCloud=new Image()
-        this.imageCloud.src="../assets/images/DashCloud.png"
 
         //Strike Attributes
         this.strikeRecency = 0
         this.strikeLag = 0.7
-        this.opacityRemovalRate = 0.1
 
         //All of these are to create the vectors necessary to adjust the position of the strike trace thing on screen
         this.preStrikeX = 0
@@ -170,154 +135,6 @@ class SwordFighter{
         this.currentMovementKey
         this.previousMovementKey
         this.previousFacing
-    }
-
-    drawCloud(scaling){
-        if(this.traceDrawn==false){
-            this.traceDrawn=true
-            if(speedDebuff<3&&this.isRunning&&this.strikeRecency<=0){
-            //if(true){
-                if(this.facing=='S'){
-                    this.imageCloud.src="../assets/images/DashTraceS.png"
-                    c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x,this.position.y + camera.y - this.height/2,50*scaling,50*scaling)
-                } else if(this.facing=='N'){
-                    this.imageCloud.src="../assets/images/DashTraceN.png"
-                    c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x,this.position.y + camera.y + this.height, 50*scaling,50*scaling)
-                } else if(this.facing=='W'){
-                    this.imageCloud.src="../assets/images/DashTraceW.png"
-                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x+this.width/2, this.position.y + camera.y,50 * scaling,50 * scaling);
-                } else if (this.facing == 'E') {
-                    this.imageCloud.src = "../assets/images/DashTraceE.png"
-                    c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x-this.width/2,this.position.y + camera.y,50*scaling,50*scaling)
-                } else if (this.facing == 'NE') {
-                    this.imageCloud.src = "../assets/images/DashTraceNE.png";
-                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x - this.width/2.5, this.position.y + camera.y + this.height/2, 50 * scaling, 50 * scaling);
-                } else if (this.facing == 'NW') {
-                    this.imageCloud.src = "../assets/images/DashTraceNW.png";
-                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x + this.width/2.5, this.position.y + camera.y + this.height/2, 50 * scaling, 50 * scaling);
-                } else if (this.facing == 'SE') {
-                    this.imageCloud.src = "../assets/images/DashTraceSE.png";
-                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x - this.width/2.5, this.position.y + camera.y - this.height/2, 50 * scaling, 50 * scaling);
-                } else if (this.facing == 'SW') {
-                    this.imageCloud.src = "../assets/images/DashTraceSW.png";
-                    c.drawImage(this.imageCloud, 0, 0, 50, 50, this.position.x + camera.x + this.width/2.5, this.position.y + camera.y - this.height/2, 50 * scaling, 50 * scaling);
-                }
-                //For drawing shadow uncomment this line and comment out the other c.drawImage line and uncomment the unconditional if statement above
-                //c.drawImage(this.imageCloud,0,0,50,50,this.position.x + camera.x,this.position.y + camera.y - this.height/3,50*scaling,50*scaling)
-            }
-        }
-    }
-
-    draw() {
-        //FIRST Draw the strike trace if there should be one. Do this first so that anything else is drawn over it
-        console.log("recency", this.strikeRecency)
-        if(this.strikeRecency>0){
-            const currentOpacity = this.strikeRecency
-            this.postStrikeCamX=camera.x
-            this.postStrikeCamY=camera.y
-            c.strokeStyle = 'rgba(216, 229, 234, '+currentOpacity+')';
-            c.lineWidth = 20;                           
-            c.lineCap = 'butt';
-            //This is the strike trace. If you need to understand this and are confused, ask me to relearn it quickly and ill explain it on discord                      
-            c.beginPath();           
-            c.moveTo(this.preStrikeX+(this.postStrikeCamX-this.preStrikeCamX)+((this.width/2)*this.animationScale), this.preStrikeY+(this.postStrikeCamY-this.preStrikeCamY)+((this.width/2)*this.animationScale));      
-            c.lineTo(this.postStrikeX+(this.postStrikeCamX-this.preStrikeCamX)+((this.width/2)*this.animationScale), this.postStrikeY+(this.postStrikeCamY-this.preStrikeCamY)+((this.width/2)*this.animationScale));     
-            c.stroke(); 
-        }
-
-        //SECOND These are all the animations related to the actual player
-        //Hierarchy: Striking > Setting > Running > Idle
-        if(this.strikeRecency>0){
-            this.imageFox.src="../assets/images/StrikeFoxSanim.png"
-            this.animateSwordFighter(4,12,0,this.animationScale)
-        } else{
-            if(this.isParrying){
-                console.log("PARRY")
-                this.imageFox.src="../assets/images/ParryFoxFull.png"
-                this.animateSwordFighter(4,16,0,this.animationScale)
-            }
-            else if(this.isSetting){
-                this.imageFox.src="../assets/images/IsSetting.png"
-                this.animateSwordFighter(7,49,0,this.animationScale)
-            }else{
-                if(this.isRunning){
-                    if(this.facing=='S'){
-                        this.imageFox.src="../assets/images/RunFoxS.png"
-                        this.animateSwordFighter(10,30,0,this.animationScale)   
-                    } else if(this.facing=='SW'){
-                        this.imageFox.src="../assets/images/RunFoxSW.png"
-                        this.animateSwordFighter(10,40,20,this.animationScale)
-                    } else if(this.facing=='SE'){
-                        this.imageFox.src="../assets/images/RunFoxSE.png"
-                        this.animateSwordFighter(10,40,20,this.animationScale)
-                    }else if(this.facing=='N'){
-                        this.imageFox.src="../assets/images/RunFoxNsheet.png"
-                        this.animateSwordFighter(10,20,0,this.animationScale)
-                        
-                    } else if(this.facing=='NE'){
-                        this.imageFox.src="../assets/images/RunFoxNE.png"
-                        this.animateSwordFighter(10,40,20,this.animationScale)
-                    }else if(this.facing=='NW'){
-                        this.imageFox.src="../assets/images/RunFoxNW.png"
-                        this.animateSwordFighter(10,40,20,this.animationScale)
-                    }else if(this.facing=='W'){
-                        this.imageFox.src="../assets/images/RunFoxW.png"
-                        this.animateSwordFighter(10,20,0,this.animationScale)
-                    } else if(this.facing=='E'){
-                        this.imageFox.src="../assets/images/RunFoxE.png"
-                        this.animateSwordFighter(10,20,0,this.animationScale)
-                    }
-                } else{
-                    if(this.facing=='S'){
-                        this.imageFox.src="../assets/images/IdleFoxS.png"
-                        this.animateSwordFighter(10,20,0,this.animationScale)
-                    } else if(this.facing=='N'){
-                        this.imageFox.src="../assets/images/IdleFoxN.png"
-                        this.animateSwordFighter(10,20,0,this.animationScale)
-                    } else if(this.facing=='W'){
-                        this.imageFox.src="../assets/images/IdleFoxW.png"
-                        this.animateSwordFighter(10,60,0,this.animationScale)
-                    } else if(this.facing=='E'){
-                        this.imageFox.src="../assets/images/IdleFoxE.png"
-                        this.animateSwordFighter(10,20,0,this.animationScale)
-                    }
-                }
-            }
-        }
-        //FOR TESTING: Outlines where the players hurtbox would be.
-        //c.fillRect(this.position.x+camera.x,this.position.y+camera.y, this.width*this.animationScale, this.height*this.animationScale)
-    }
-
-    animateSwordFighter(slowdown,max,start,scaling){
-
-        //Draw cloud/trace behind elements
-        this.drawCloud(this.animationScale)
-
-        if(this.animCount>=max){
-            this.animCount=start
-        }
-        //Might be able to move this line to reduce operations
-        c.imageSmoothingEnabled=false;
-
-        //This works by adjusting the sprite relative to the camera's postion. 
-        // 
-        // Say you're at the leftmost part of the map, and move your character right. The camera moves to the right to follow your character, but he also moves right on your screen.
-        // 
-        //  In this sense he moves right "twice". 
-        // 
-        // The camera corrects for this- if he moved right on the map, and the camera moved with it, this offset puts him back in the center of the screen.
-        // 
-        // If he moved right and the camera did NOT move with him, he moves right on your screen as normal.
-        // 
-        // 
-        // The camera is acting as an offset to keep him on the center of your screen, as he moves across the map.
-        
-        c.drawImage(this.imageFox,50*(Math.floor(this.animCount/slowdown)),0,this.width,this.height,this.position.x + camera.x,this.position.y + camera.y,this.width*scaling,this.height*scaling)
-        this.animCount+=1
-
-        //Draw cloud/trace in front of elements (if necessary)
-        this.drawCloud(this.animationScale)
-        this.traceDrawn=false
     }
 
     update() {
@@ -343,7 +160,6 @@ class SwordFighter{
                 speedDebuff=4
             }
         }
-        console.log('DEBUFF',speedDebuff)
 
         //add velocity to the position
         this.position.y += this.velocity.y
@@ -395,10 +211,6 @@ class SwordFighter{
 
 
                 console.log("IN CIRCLE", true)
-                this.preStrikeX=this.position.x+camera.x
-                this.preStrikeY=this.position.y+camera.y
-                this.preStrikeCamX=camera.x
-                this.preStrikeCamY=camera.y
                 this.point.strike()
                 this.postStrikeX=this.position.x +camera.x
                 this.postStrikeY=this.position.y +camera.y
@@ -410,7 +222,8 @@ class SwordFighter{
             }
 
         }
-        this.draw()
+        //TODO: Replace this with socket method that sends necessary attributes to SwordFighterUI in client so that it can draw
+        //this.draw()
     }
 
     move(keys){
@@ -472,11 +285,11 @@ class SwordFighter{
             set.volume = 0.65;
             let randomOutcome = Math.floor(Math.random()*3)
             if(randomOutcome==0){
-                set.src="../assets/sounds/fox_set_1.mp3"
+                set.src="public/assets/sounds/fox_set_1.mp3"
             } else if(randomOutcome==1){
-                set.src="../assets/sounds/fox_set_2.mp3"
+                set.src="public/assets/sounds/fox_set_2.mp3"
             } else if(randomOutcome==2){
-                set.src="../assets/sounds/fox_set_3.mp3"
+                set.src="public/assets/sounds/fox_set_3.mp3"
             }
             set.play()
 

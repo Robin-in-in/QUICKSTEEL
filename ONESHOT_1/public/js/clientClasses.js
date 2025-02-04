@@ -4,8 +4,7 @@ class Camera {
     //WILL NEED: mapWidth, mapHeight (should both be locally availabposition, fighterID (locally available, unless I decide to update it every update to prevent big bugs)
     constructor(mapWidth, mapHeight, fighter) {
       this.fighter = fighter
-      this.x = (mapWidth/2);
-      this.y = (mapHeight/2);
+      this.position = ({x:(mapWidth/2),y:(mapHeight/2)})
       this.smoothness = 0.5; // Adjust for desired smoothness
 
       this.mapImage = new Image()
@@ -20,12 +19,12 @@ class Camera {
       targetY = Math.min(0, Math.max(targetY, -(mapHeight) + canvas.height));
 
       // Smoothly move the camera
-      this.x += (targetX - this.x) * this.smoothness;
-      this.y += (targetY - this.y) * this.smoothness;
+      this.x += (targetX - this.position.x) * this.smoothness;
+      this.y += (targetY - this.position.y) * this.smoothness;
     }
 
     mapDraw(){
-        c.drawImage(this.mapImage,0,0,this.width/this.upscale,this.height/this.upscale,this.position.x,this.position.y,this.width,this.height)
+        c.drawImage(this.mapImage,0,0,this.width/this.upscale,this.height/this.upscale,this.fighter.position.x,this.fighter.position.y,this.width,this.height)
     }
 
     mapAnimate(){
@@ -33,13 +32,13 @@ class Camera {
             this.mapAnimCount=start
         }
         this.position=position
-        c.drawImage(this.mapImage,488*(Math.floor(this.mapAnimCount/slowdown)),0,this.width/this.upscale,this.height/this.upscale,this.position.x,this.position.y,this.width,this.height)
+        c.drawImage(this.mapImage,488*(Math.floor(this.mapAnimCount/slowdown)),0,this.width/this.upscale,this.height/this.upscale,this.fighter.position.x,this.fighter.position.y,this.width,this.height)
         this.mapAnimCount+=1
     }
 }
 
 class SwordFighterUI{
-    constructor(width,height,fighterID){
+    constructor(width,height,fighterID, mapWidth, mapHeight){
     //Player Animation
     this.animCount=0
     this.animLayer=0
@@ -48,6 +47,10 @@ class SwordFighterUI{
     this.imageFox.src="../assets/images/IdleFoxS.png"
     this.width=width
     this.height=height
+
+    this.position = {x:0, y:0}
+
+    this.camera = new Camera({mapWidth: mapWidth, mapHeight: mapHeight, player: this})
 
     //Player attributes
     this.facing = 'S'
@@ -68,15 +71,15 @@ class SwordFighterUI{
 
     //General Animation
     this.animationScale=2.2
-    this.preStrikeCamX= camera.x
-    this.preStrikeCamY= camera.y
+    this.preStrikeCamX= this.camera.x
+    this.preStrikeCamY= this.camera.y
     this.currentStrikeOpacity = 0;
 
     this.fighterID = fighterID
     
     }
 
-    refreshAttributes(width,height,fighterID){
+    refreshAttributes(width,height,fighterID,position, facing, isRunning, isSetting, isParrying, strikeRecency, speedDebuff){
         if(this.fighterID == fighterID){
             this.facing = facing
             this.isRunning = isRunning
@@ -86,6 +89,7 @@ class SwordFighterUI{
             this.speedDebuff = speedDebuff
             this.width=width
             this.height=height
+            this.position = position
         }     
     }
 
@@ -101,17 +105,17 @@ class SwordFighterUI{
          I don't know if frame skipping might have a chance to break this though. I'm leaving a bit of margin of error to update between 1.1 ad 0.9, so that it doesn't break if it's not exactly 1.0
          This should theoretically prevent the strike trace from going scitzo on most setups, but it's a possibility for sure.*/
         if(this.strikeRecency>0.9){
-            this.postStrikeCamX=camera.x
-            this.postStrikeCamY=camera.y
+            this.postStrikeCamX=this.camera.position.x
+            this.postStrikeCamY=this.camera.position.y
             drawStrike()
         } else if(this.strikeRecency>0){
             drawStrike()
         }
         else{
-            this.preStrikeX=position.x+camera.x
-            this.preStrikeY=position.y+camera.y
-            this.preStrikeCamX=camera.x
-            this.preStrikeCamY=camera.y
+            this.preStrikeX=this.position.x+this.camera.position.x
+            this.preStrikeY=this.position.y+this.camera.position.y
+            this.preStrikeCamX=this.camera.position.x
+            this.preStrikeCamY=this.camera.position.y
         }
 
         //SECOND These are all the animations related to the actual player, seperated for clarity
@@ -211,28 +215,28 @@ class SwordFighterUI{
             if(speedDebuff<3&&this.isRunning&&this.strikeRecency<=0){
                 if(this.facing=='S'){
                     this.imageCloud.src="../assets/images/DashTraceS.png"
-                    c.drawImage(this.imageCloud,0,0,localPlayerWidth,localPlayerHeight,position.x + camera.x,position.y + camera.y - localPlayerHeight/2,localPlayerWidth*this.animationScale,localPlayerHeight*this.animationScale)
+                    c.drawImage(this.imageCloud,0,0,localPlayerWidth,localPlayerHeight,this.position.x + this.camera.position.x,this.position.y + this.camera.position.y - localPlayerHeight/2,localPlayerWidth*this.animationScale,localPlayerHeight*this.animationScale)
                 } else if(this.facing=='N'){
                     this.imageCloud.src="../assets/images/DashTraceN.png"
-                    c.drawImage(this.imageCloud,0,0,localPlayerWidth,localPlayerHeight,position.x + camera.x,position.y + camera.y + localPlayerHeight, localPlayerWidth*this.animationScale,localPlayerHeight*this.animationScale)
+                    c.drawImage(this.imageCloud,0,0,localPlayerWidth,localPlayerHeight,this.position.x + this.camera.position.x,this.position.y + this.camera.position.y + localPlayerHeight, localPlayerWidth*this.animationScale,localPlayerHeight*this.animationScale)
                 } else if(this.facing=='W'){
                     this.imageCloud.src="../assets/images/DashTraceW.png"
-                    c.drawImage(this.imageCloud, 0, 0, localPlayerWidth, localPlayerHeight, position.x + camera.x+localPlayerWidth/2, position.y + camera.y,localPlayerWidth * this.animationScale,localPlayerHeight * this.animationScale);
+                    c.drawImage(this.imageCloud, 0, 0, localPlayerWidth, localPlayerHeight, this.position.x + this.camera.position.x+localPlayerWidth/2, this.position.y + this.camera.position.y,localPlayerWidth * this.animationScale,localPlayerHeight * this.animationScale);
                 } else if (this.facing == 'E') {
                     this.imageCloud.src = "../assets/images/DashTraceE.png"
-                    c.drawImage(this.imageCloud,0,0,localPlayerWidth,localPlayerHeight,position.x + camera.x-localPlayerWidth/2,position.y + camera.y,localPlayerWidth*this.animationScale,localPlayerHeight*this.animationScale)
+                    c.drawImage(this.imageCloud,0,0,localPlayerWidth,localPlayerHeight,this.position.x + this.camera.position.x-localPlayerWidth/2,this.position.y + this.camera.position.y,localPlayerWidth*this.animationScale,localPlayerHeight*this.animationScale)
                 } else if (this.facing == 'NE') {
                     this.imageCloud.src = "../assets/images/DashTraceNE.png";
-                    c.drawImage(this.imageCloud, 0, 0, localPlayerWidth, localPlayerHeight, position.x + camera.x - localPlayerWidth/2.5, position.y + camera.y + localPlayerHeight/2, localPlayerWidth * this.animationScale, localPlayerHeight * this.animationScale);
+                    c.drawImage(this.imageCloud, 0, 0, localPlayerWidth, localPlayerHeight, this.position.x + this.camera.position.x - localPlayerWidth/2.5, this.position.y + this.camera.position.y + localPlayerHeight/2, localPlayerWidth * this.animationScale, localPlayerHeight * this.animationScale);
                 } else if (this.facing == 'NW') {
                     this.imageCloud.src = "../assets/images/DashTraceNW.png";
-                    c.drawImage(this.imageCloud, 0, 0, localPlayerWidth, localPlayerHeight, position.x + camera.x + localPlayerWidth/2.5, position.y + camera.y + localPlayerHeight/2, localPlayerWidth * this.animationScale, localPlayerHeight * this.animationScale);
+                    c.drawImage(this.imageCloud, 0, 0, localPlayerWidth, localPlayerHeight, this.position.x + this.camera.position.x + localPlayerWidth/2.5, this.position.y + this.camera.position.y + localPlayerHeight/2, localPlayerWidth * this.animationScale, localPlayerHeight * this.animationScale);
                 } else if (this.facing == 'SE') {
                     this.imageCloud.src = "../assets/images/DashTraceSE.png";
-                    c.drawImage(this.imageCloud, 0, 0, localPlayerWidth, localPlayerHeight, position.x + camera.x - localPlayerWidth/2.5, position.y + camera.y - localPlayerHeight/2, localPlayerWidth * this.animationScale, localPlayerHeight * this.animationScale);
+                    c.drawImage(this.imageCloud, 0, 0, localPlayerWidth, localPlayerHeight, this.position.x + this.camera.position.x - localPlayerWidth/2.5, this.position.y + this.camera.position.y - localPlayerHeight/2, localPlayerWidth * this.animationScale, localPlayerHeight * this.animationScale);
                 } else if (this.facing == 'SW') {
                     this.imageCloud.src = "../assets/images/DashTraceSW.png";
-                    c.drawImage(this.imageCloud, 0, 0, localPlayerWidth, localPlayerHeight, position.x + camera.x + localPlayerWidth/2.5, position.y + camera.y - localPlayerHeight/2, localPlayerWidth * this.animationScale, localPlayerHeight * this.animationScale);
+                    c.drawImage(this.imageCloud, 0, 0, localPlayerWidth, localPlayerHeight, this.position.x + this.camera.position.x + localPlayerWidth/2.5, this.position.y + this.camera.position.y - localPlayerHeight/2, localPlayerWidth * this.animationScale, localPlayerHeight * this.animationScale);
                 }
             }
         }
@@ -263,7 +267,7 @@ class SwordFighterUI{
         // 
         // The camera is acting as an offset to keep him on the center of your screen, as he moves across the map.
         
-        c.drawImage(this.imageFox,50*(Math.floor(this.animCount/slowdown)),0,localPlayerWidth,localPlayerHeight,position.x + camera.x,position.y + camera.y,localPlayerWidth*this.animationScale,localPlayerHeight*this.animationScale)
+        c.drawImage(this.imageFox,50*(Math.floor(this.animCount/slowdown)),0,localPlayerWidth,localPlayerHeight,this.position.x + this.camera.position.x,position.y + this.camera.position.y,localPlayerWidth*this.animationScale,localPlayerHeight*this.animationScale)
         this.animCount+=1
 
         //Draw cloud/trace in front of elements (if necessary)
@@ -293,7 +297,7 @@ class StrikeCircleUI {
 
     draw() {
         c.imageSmoothingEnabled=false;
-        c.drawImage(this.strikeCircle,0,0,this.radius*2,this.radius*2,this.screenPosition.x+(camera.x-this.initialCamX)-this.scaling*this.radius,this.screenPosition.y+(camera.y-this.initialCamY)-this.scaling*this.radius,this.radius*2*this.scaling,this.radius*2*this.scaling)
+        c.drawImage(this.strikeCircle,0,0,this.radius*2,this.radius*2,this.screenPosition.x+(this.camera.position.x-this.initialCamX)-this.scaling*this.radius,this.screenPosition.y+(this.camera.position.y-this.initialCamY)-this.scaling*this.radius,this.radius*2*this.scaling,this.radius*2*this.scaling)
     }
 }
 

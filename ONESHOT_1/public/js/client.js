@@ -1,20 +1,46 @@
 const socket = io('http://localhost:3001');
-const player = null
+let player = null
 
+/*
 const position = {x:0,y:0}
 const facing = 'S'
 const isRunning = false
 const isSetting = false
 const isParrying = false
 const strikeRecency = 0
-const speedDebuff = 0
+let speedDebuff = 0
+*/
 
-const screenWidth = window.innerWidth;
-const screenHeight = window.innerHeight;
+let screenWidth = window.innerWidth;
+let screenHeight = window.innerHeight;
+
+
+const canvas = document.querySelector('canvas')
+canvas.width = 1024
+canvas.height = 576
+const c = canvas.getContext('2d')
+
 const canvasOffsetX = (screenWidth-canvas.width)/2
 const canvasOffsetY = (screenHeight-canvas.height)/2
 
-mapImageSrc = '../assets/images/background1'
+
+
+
+c.fillRect(0,0, canvas.width, canvas.height)
+
+//List all audio files here, played within draw loop 
+const parry1 = new Audio("../assets/sounds/fox_parry_1.mp3")
+const parry2 = new Audio("../assets/sounds/fox_parry_2.mp3")
+const parry3 = new Audio("../assets/sounds/fox_parry_3.mp3")
+const slash1 = new Audio("../assets/sounds/fox_slash_1.mp3")
+const slash2 = new Audio("../assets/sounds/fox_slash_2.mp3")
+const slash3 = new Audio("../assets/sounds/fox_slash_3.mp3")
+const set = new Audio("../assets/sounds/fox_set_1.mp3")
+const background = new BackMap({position: {x:0,y:0}, imageSrc:'../assets/images/background2.png',width: 1950,height: 1300,upscale:1})
+const backgroundWind = new Audio("../assets/sounds/backgroundWind.mp3")
+backgroundWind.loop = true
+backgroundWind.play()
+
 const inputData ={
     keys : {
         a: {
@@ -38,7 +64,7 @@ const inputData ={
     parry: false,
 }
 
-const strikeData ={
+let strikeData ={
     canvasOffset: {x:0,y:0},
     mouse: {x:0,y:0}
 }
@@ -154,49 +180,20 @@ window.addEventListener('keyup', (event) =>{
 
 socket.on('initial', (mapWidth, mapHeight, playerWidth, playerHeight, fighterID, playerScaling) => {
     //When client connects, the server will send the initial data. This is where we set it up.
-    player = new SwordFighterUI({width: playerWidth, height: playerHeight, fighterID: fighterID, localScaling: playerScaling})
-
-    //TODO: Should supply these random little immutable vars, like the map size, pllocalPlayerWidth/height to the client on connection. See socket.on('connect',...) above
-    camera = new Camera({mapWidth: mapWidth, mapHeight: mapHeight, player: player})
-
-
-    const canvas = document.querySelector('canvas')
-    const c = canvas.getContext('2d')
-    canvas.width = 1024
-    canvas.height = 576
-
-
-    
-    
-
-    c.fillRect(0,0, canvas.width, canvas.height)
-
-    //List all audio files here, played within draw loop 
-    const parry1 = new Audio("../assets/sounds/fox_parry_1.mp3")
-    const parry2 = new Audio("../assets/sounds/fox_parry_2.mp3")
-    const parry3 = new Audio("../assets/sounds/fox_parry_3.mp3")
-    const slash1 = new Audio("../assets/sounds/fox_slash_1.mp3")
-    const slash2 = new Audio("../assets/sounds/fox_slash_2.mp3")
-    const slash3 = new Audio("../assets/sounds/fox_slash_3.mp3")
-    const set = new Audio("../assets/sounds/fox_set_1.mp3")
-    const background = new BackMap({position: {x:0,y:0}, imageSrc:'../assets/images/background1',width: 1950,height: 1300,upscale:1})
-    const backgroundWind = new Audio("../assets/sounds/backgroundWind.mp3")
-    backgroundWind.loop = true
-    backgroundWind.play()
+    player = new SwordFighterUI({width: playerWidth, height: playerHeight, fighterID: fighterID, localScaling: playerScaling, mapWidth: mapWidth, mapHeight: mapHeight})
 });
 
 socket.on('update', (playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry, strikeRecency, speedDebuff) => {
     //Server will send updates to the client, this is where we update the client based on the server's dapositiposition
     
     //TODO: Will have to figure out a way to give unique ID's to each player- shouldn't be hard, only 1v1 for now
-    if(player==null){
-        player = new SwordFighterUI({width:playerWidth,height:playerHeight,fighterID: fighterID})
-    } else{
-        player.refreshAttributes(playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry.isParrying, strikeRecency, speedDebuff)
-    }
+    player.refreshAttributes(playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry.isParrying, strikeRecency, speedDebuff)
+    
 })
 
-
+let lastTime = 0;
+const targetFPS = 60;
+const frameDuration = 1000 / targetFPS;
 
 //TODO: Should probably move this to server
 function animate(timestamp){
@@ -214,16 +211,18 @@ function animate(timestamp){
 
         c.fillStyle = "black"
         c.fillRect(0,0,canvas.width,canvas.height)
-        background.draw({position: {x:camera.x, y:camera.y}})
+        if(player!=null){
+            background.draw({position: {x:player.camera.x, y:player.camera.y}})
 
         
-        //Update each object
-        player.draw();
-        camera.update();
-
-        if(player.point){
-            player.point.update();
-        }
+            //Update each object
+            player.draw();
+            player.camera.update();
+    
+            if(player.point){
+                player.point.update();
+            }
+        } 
     }
     window.requestAnimationFrame(animate);
 }

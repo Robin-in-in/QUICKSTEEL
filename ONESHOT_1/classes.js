@@ -1,8 +1,3 @@
-const index = require('index.js');
-
-//List all background images here, drawn within draw loop
-const background = new Map({position: {x:0,y:0}, imageSrc:'../assets/images/background1',width: 1950,height: 1300,upscale:1})
-
 class StrikePoint{
     constructor({position, ownerFighter, color = 'blue'}){
         this.self = this
@@ -17,11 +12,6 @@ class StrikePoint{
         this.strikeCircle.src = "public/assets/images/StrikePoint.png"
         this.scaling=1.2
         this.fighter=ownerFighter
-    }
-
-    draw() {
-        c.imageSmoothingEnabled=false;
-        c.drawImage(this.strikeCircle,0,0,this.radius*2,this.radius*2,this.screenPosition.x+(camera.x-this.initialCamX)-this.scaling*this.radius,this.screenPosition.y+(camera.y-this.initialCamY)-this.scaling*this.radius,this.radius*2*this.scaling,this.radius*2*this.scaling)
     }
 
     update() {
@@ -49,73 +39,35 @@ class StrikePoint{
     }
 }
 
-class Map{
-    constructor({position, imageSrc, width, height,upscale}) {
-        this.position = position
-        this.mapImage = new Image()
-        this.mapImage.src = imageSrc
-        this.width = width
-        this.height = height
-        this.upscale=upscale
 
-        this.animCount=0
-    }
-
-    draw() {
-        //c.drawImage(this.image, this.position.x, this.position.y)
-        c.drawImage(this.mapImage,0,0,this.width/this.upscale,this.height/this.upscale,this.position.x,this.position.y,this.width,this.height)
-
-    }
-
-    draw({position}) {
-        this.position=position
-        //c.drawImage(this.mapImage, this.position.x, this.position.y)
-        c.drawImage(this.mapImage,0,0,this.width/this.upscale,this.height/this.upscale,this.position.x,this.position.y,this.width,this.height)
-
-    }
-
-    animateMap({position,start,max,slowdown}){
-        if(this.animCount>=max){
-            this.animCount=start
-        }
-        //console.log("max", max)
-        //console.log("start", start)
-        //console.log("mapAnimCount:", this.animCount)
-        //console.log("Map positionX", position.x)
-        this.position=position
-        c.drawImage(this.mapImage,488*(Math.floor(this.animCount/slowdown)),0,this.width/this.upscale,this.height/this.upscale,this.position.x,this.position.y,this.width,this.height)
-        this.animCount+=1
-    }
-
-    update() {
-        this.draw()
-    }
-}  
 
 class SwordFighter{
-    constructor({playerID}) {
+    constructor({fighterID}) {
         //TODO: Player animation and opacity stuff needs to be moved to some frontend swordfighter thing
         //I think some opacity stuff is directly related to game logic so need to figure that out
         //Need to move calculation of position velocity to this version of swordfighter, only need facing and input key list from client
         this.self=this
+        this.fighterID = fighterID
 
-        this.position = 0
-        this.velocity = 0
+        this.position = {x:0,y:0}
+        this.velocity = {x:0,y:0}
 
         //Map attributes needed so player doesn't leave boundaries
-        this.mapWidth=map.width
-        this.mapHeight=map.height
+        this.mapWidth=1950
+        this.mapHeight=1300
 
         //Dimensions of original sprite
         this.height=50
         this.width=50
+        this.animationScale=2.2
         
         //Attributes
         this.isSetting = false
-        this.isParrying = false
+        this.parry= {isParrying: false, recentParry: false}
         this.point = null;
         this.isRunning = false
         this.facing = 'S'
+        this.speedDebuff = 0
 
 
         //Strike Attributes
@@ -132,12 +84,39 @@ class SwordFighter{
         this.postStrikeY = 0
         this.postStrikeCamY = 0
 
+        this.inputData = {
+            keys : {
+                a: {
+                    pressed: false
+                },
+                d: {
+                    pressed: false
+                },
+                w: {
+                    pressed: false
+                },
+                s: {
+                    pressed: false
+                },
+                none: {
+                    pressed: false
+                }
+            },
+            keysPressed : []
+        }
+
         this.currentMovementKey
         this.previousMovementKey
         this.previousFacing
     }
 
+    refreshAttributes(){
+
+    }
+
     update() {
+        this.updateVelocity()
+
         if(this.strikeRecency>0){
             this.strikeRecency-=0.1
         }
@@ -153,11 +132,11 @@ class SwordFighter{
             this.velocity.x=0
             this.velocity.y=0
         }
-        if(this.isParrying){
-            speedDebuff=10
-        } else if(this.recentParry){
-            if(speedDebuff<4){
-                speedDebuff=4
+        if(this.parry.isParrying){
+            this.speedDebuff=10
+        } else if(this.parry.recentParry){
+            if(this.speedDebuff<4){
+                this.speedDebuff=4
             }
         }
 
@@ -202,7 +181,6 @@ class SwordFighter{
             }
             this.isRunning=false
         }
-        console.log("Facing:", this.facing)
         
         //If the strikepoint connected to the player is placed, detect if he is in it's radius.
         //If he is then strike. (See the method for comments on what it does)
@@ -226,46 +204,46 @@ class SwordFighter{
         //this.draw()
     }
 
-    move(keys){
+    updateVelocity(){
         //Logic for decreasing speed of player after initial movement 
         // Get the currentMovementKey from the last of the pressed keys array
-        this.currentMovementKey = keysPressed[keysPressed.length - 1]
+        this.currentMovementKey = this.inputData.keysPressed[this.inputData.keysPressed.length - 1]
         if(this.strikeRecency>0){
-            speedDebuff=-(this.strikeRecency)*10
+            this.speedDebuff=-(this.strikeRecency)*10
         }
         else{
-            if((this.previousFacing === this.facing) && (speedDebuff < 7.5)){
-                speedDebuff += 0.6
+            if((this.previousFacing === this.facing) && (this.speedDebuff < 7.5)){
+                this.speedDebuff += 0.6
             } else if(this.previousFacing == this.facing&&this.previousMovementKey!=this.currentMovementKey){
-                speedDebuff = 0
+                this.speedDebuff = 0
             } else if(this.previousFacing != this.facing){
-                speedDebuff = 0
+                this.speedDebuff = 0
             }
         }
         
 
         
 
-        player.velocity.x = 0
-        player.velocity.y = 0
+        this.velocity.x = 0
+        this.velocity.y = 0
 
-        const speed = 15 - speedDebuff;
-        const isMovingVertically = keys.w.pressed || keys.s.pressed;
-        const isMovingHorizontally = keys.a.pressed || keys.d.pressed;
+        const speed = 15 - this.speedDebuff;
+        const isMovingVertically = this.inputData.keys.w.pressed || this.inputData.keys.s.pressed;
+        const isMovingHorizontally = this.inputData.keys.a.pressed || this.inputData.keys.d.pressed;
 
         // Normalize diagonal speed to prevent faster movement
         const diagonalSpeed = isMovingVertically && isMovingHorizontally ? speed / Math.sqrt(2) : speed;
 
-        if (keys.a.pressed) {
+        if (this.inputData.keys.a.pressed) {
             player.velocity.x = -diagonalSpeed;
         }
-        if (keys.d.pressed) {
+        if (this.inputData.keys.d.pressed) {
             player.velocity.x = diagonalSpeed;
         }
-        if (keys.w.pressed) {
+        if (this.inputData.keys.w.pressed) {
             player.velocity.y = -diagonalSpeed;
         }
-        if (keys.s.pressed) {
+        if (this.inputData.keys.s.pressed) {
             player.velocity.y = diagonalSpeed;
         }
 
@@ -274,27 +252,16 @@ class SwordFighter{
     }
 
 
-    setStrikePoint() {
+    setStrikePoint(strikeData) {
         //Make sure he isin't already setting, so you can't cancel one set with another.
         //The animation isin't very long to begin with but it's just a small delay so you can't instantly readjust
-        if(!this.isSetting&&!this.isParrying){
+        if(!this.isSetting&&!this.parry.isParrying){
             this.isSetting = true
 
-            //Play random set sound
-            set.currentTime = 0;
-            set.volume = 0.65;
-            let randomOutcome = Math.floor(Math.random()*3)
-            if(randomOutcome==0){
-                set.src="public/assets/sounds/fox_set_1.mp3"
-            } else if(randomOutcome==1){
-                set.src="public/assets/sounds/fox_set_2.mp3"
-            } else if(randomOutcome==2){
-                set.src="public/assets/sounds/fox_set_3.mp3"
-            }
-            set.play()
+            
 
             //the "-7s" here are to offset the top corner of the screen, which is just occupied by whitespace. I might need to actually deal with this in HTML/CSS later, make the game fullscreen offrip or something, since that white space may or may not be different            this.point = new StrikePoint({position: {x: mouseX -7, y: mouseY-7},ownerFighter:this.self})
-            this.point = new StrikePoint({position: {x: mouseX -canvasOffsetX, y: mouseY-64},ownerFighter:this.self})
+            this.point = new StrikePoint({position: {x: strikeData.mouse.x -strikeData.canvasOffset.x, y: strikeData.mouse.y-strikeData.canvasOffset.y},ownerFighter:this.self})
             //This is the delay, 0.5 seconds before the tag (this.isSetting) becomes false
             setTimeout(()=>{
                 this.isSetting=false
@@ -305,33 +272,39 @@ class SwordFighter{
     parry() {
         //If the player is in a strike recency, they can't parry
         if(!this.isSetting&&!this.recentParry){
-            console.log("PARRYING", this.recentParry)
-            set.pause();
-            set.currentTime = 0;
-            parry1.pause();
-            parry1.currentTime = 0;
-            parry2.pause();
-            parry2.currentTime = 0;
-            parry3.pause();
-            parry3.currentTime = 0;
-
-            this.isParrying = true
-            this.recentParry = true;
-            let randomOutcome = Math.floor(Math.random()*3)
-            if(randomOutcome==0){
-                parry1.play()
-            } else if(randomOutcome==1){
-                parry2.play()
-            } else if(randomOutcome==2){
-                parry3.play()
-            }
+            this.parry.isParrying = true
+            this.parry.recentParry = true;
             //logic for parrying
             setTimeout(()=>{
-                this.isParrying=false
+                this.parry.isParrying=false
             }, 250)
             setTimeout(()=>{
-                this.recentParry=false
+                this.parry.recentParry=false
             }, 2000)
         }
     }
+
+    detectCircleFighterCollision(circleCenterX, circleCenterY, circleRadius, fighter) {
+        const centerX = circleCenterX;
+        const centerY = circleCenterY;
+        const radius = circleRadius;
+    
+        const fx = fighter.position.x;
+        const fy = fighter.position.y;
+        const fh = fighter.height*fighter.animationScale;
+        const fw = fighter.width*fighter.animationScale;
+    
+        // Closest point on the fighter to the circle's center
+        // Finds the minimum between the distance of the right side from the center vs. the distance of the center from the left side
+        // Essentially: What is the shortest distance between one of the player sides and the circle center
+        const distanceX = Math.min(Math.abs(centerX-(fx+fw)),Math.abs(fx-centerX))
+    
+        //Same for top/bottom
+        const distanceY = Math.min(Math.abs(centerY-(fy+fh)),Math.abs(fy-centerY))
+    
+        // Check if the distance is less than or equal to the radius
+        return (distanceX ** 2 + distanceY ** 2) <= (radius ** 2)
+    }
 }
+
+module.exports = {SwordFighter, StrikePoint}

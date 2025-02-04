@@ -20,8 +20,8 @@ canvas.width = 1024
 canvas.height = 576
 const c = canvas.getContext('2d')
 
-const canvasOffsetX = (screenWidth-canvas.width)/2
-const canvasOffsetY = (screenHeight-canvas.height)/2
+let canvasOffsetX = (screenWidth-canvas.width)/2
+let canvasOffsetY = (screenHeight-canvas.height)/2
 
 
 
@@ -36,12 +36,11 @@ const slash1 = new Audio("../assets/sounds/fox_slash_1.mp3")
 const slash2 = new Audio("../assets/sounds/fox_slash_2.mp3")
 const slash3 = new Audio("../assets/sounds/fox_slash_3.mp3")
 const set = new Audio("../assets/sounds/fox_set_1.mp3")
-const background = new BackMap({position: {x:0,y:0}, imageSrc:'../assets/images/background2.png',width: 1950,height: 1300,upscale:1})
 const backgroundWind = new Audio("../assets/sounds/backgroundWind.mp3")
 backgroundWind.loop = true
 backgroundWind.play()
 
-const inputData ={
+let inputData ={
     keys : {
         a: {
             pressed: false
@@ -59,9 +58,7 @@ const inputData ={
             pressed: false
         }
     },
-    keysPressed : [],
-    
-    parry: false,
+    keysPressed : []
 }
 
 let strikeData ={
@@ -79,10 +76,11 @@ window.addEventListener('mousemove', (event) => {
 window.addEventListener('mousedown', (event) => {
     if (event.button === 0) { // 0 is the code for the left mouse button
         console.log('left click');
+        console.log(strikeData.mouse.x)
         if (player.animCount > 30) {
             player.animCount = 0;
         }
-        socket.emit('strike', {strikeData})
+        socket.emit('strike', strikeData, player?.camera.position)
     }
 });
 
@@ -123,24 +121,21 @@ window.addEventListener('keydown', (event) =>{
                 break
             }
         case 'q':
-            console.log('q')
             if(!event.repeat){
                 if(player.animCount>30){
                     player.animCount=0
                 }
-                inputData.strike = true
+                socket.emit('strike', strikeData, player?.camera.position)
                 break
             }
         case 'e':
-            console.log('e')
             if(!event.repeat){
                 player.animCount=0
                 socket.emit('parry')
                 break
             }
     }
-    socket.emit('inputs', inputData);
-    inputData.strike = false
+    socket.emit('inputs', inputData)
 })
 
 //Tracks when keys are released
@@ -174,13 +169,13 @@ window.addEventListener('keyup', (event) =>{
         inputData.keysPressed.splice(upIndex, 1);
     }
     //player.move(keys);
-    socket.emit('inputs', inputData.keysPressed);
+    socket.emit('inputs', inputData);
 })
 
 
 socket.on('initial', (mapWidth, mapHeight, playerWidth, playerHeight, fighterID, playerScaling) => {
     //When client connects, the server will send the initial data. This is where we set it up.
-    player = new SwordFighterUI({width: playerWidth, height: playerHeight, fighterID: fighterID, localScaling: playerScaling, mapWidth: mapWidth, mapHeight: mapHeight})
+    player = new SwordFighterUI(playerWidth, playerHeight, fighterID, playerScaling, mapWidth, mapHeight)
 });
 
 socket.on('update', (playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry, strikeRecency, speedDebuff) => {
@@ -203,7 +198,6 @@ function animate(timestamp){
     if (deltaTime >= frameDuration) {
       lastTime = timestamp - (deltaTime % frameDuration);
 
-
         screenWidth = window.innerWidth;
         screenHeight = window.innerHeight;
         strikeData.canvasOffset.x = (screenWidth-canvas.width)/2
@@ -212,8 +206,11 @@ function animate(timestamp){
         c.fillStyle = "black"
         c.fillRect(0,0,canvas.width,canvas.height)
         if(player!=null){
-            background.draw({position: {x:player.camera.x, y:player.camera.y}})
-
+            player.camera.background.draw({position:{x:player.camera.position.x, y:player.camera.position.y}})
+            
+            const mapImgTest = new Image()
+            mapImgTest.src = '../assets/images/background2.png'
+            c.drawImage(mapImgTest, 0, 0)
         
             //Update each object
             player.draw();

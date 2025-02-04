@@ -26,17 +26,29 @@ io.on('connection', (socket) => {
 
     const updatesPerSecond = 60
     const updateLoop = setInterval(() => {
+        
         fighter.update()
         socket.emit('update', fighter.width, fighter.height, socket.id, fighter.position, fighter.facing, fighter.isRunning, fighter.isSetting, fighter.parry, fighter.strikeRecency, fighter.speedDebuff )
     }, 1000/updatesPerSecond)
 
     socket.on('inputs', (inputData) => {
-        fighter.inputData = inputData
-
+        if (inputData && inputData.keysPressed) {
+            fighter.inputData = inputData;
+        } else {
+            console.warn('Received invalid inputData:', inputData);
+            // Optionally, assign an empty array or a default structure
+            fighter.inputData.keysPressed = []
+        }
     });
 
-    socket.on('strike',(strikeData) => {
-        fighter.setStrikePoint(strikeData)
+    socket.on('strike',(strikeData,cameraPos) => {
+        if (strikeData && strikeData.mouse.x && cameraPos) {
+            fighter.setStrikePoint(strikeData,cameraPos)
+        } else {
+            console.warn('Received invalid strikeData or cameraPos:', strikeData);
+            console.warn('cameraPos:', cameraPos)
+        }
+        
     })
 
     socket.on('parry',()=>{

@@ -2,21 +2,29 @@
 class Camera {
     //TODO: Should all be calculated in backend and return the updated positions in emit to sender 
     //WILL NEED: mapWidth, mapHeight (should both be locally availabposition, fighterID (locally available, unless I decide to update it every update to prevent big bugs)
-    constructor(mapWidth, mapHeight, fighter) {
-      this.fighter = fighter
-      this.position = ({x:(mapWidth/2),y:(mapHeight/2)})
+    constructor(mapWidth, mapHeight, player) {
+      this.fighter = player
+      this.mapWidth = mapWidth
+      this.mapHeight = mapHeight
+
+      this.position = {
+        x:this.mapWidth/2,
+        y:this.mapHeight/2
+      }
+
       this.smoothness = 0.5; // Adjust for desired smoothness
+      this.background = new BackMap({position: {x:0,y:0}, imageSrc:'../assets/images/background2.png',width: 1950,height: 1300,upscale:1})
 
       this.mapImage = new Image()
-      this.mapImage.src = background.imageSrc
+      this.mapImage.src = this.background.imageSrc
     }
   
     update() {
       let targetX = -(this.fighter.position.x - (canvas.width / 2));
       let targetY = -(this.fighter.position.y - (canvas.height / 2));
 
-      targetX = Math.min(0, Math.max(targetX, -(mapWidth) + canvas.width));
-      targetY = Math.min(0, Math.max(targetY, -(mapHeight) + canvas.height));
+      targetX = Math.min(0, Math.max(targetX, -(this.mapWidth) + canvas.width));
+      targetY = Math.min(0, Math.max(targetY, -(this.mapHeight) + canvas.height));
 
       // Smoothly move the camera
       this.x += (targetX - this.position.x) * this.smoothness;
@@ -50,7 +58,8 @@ class SwordFighterUI{
 
     this.position = {x:0, y:0}
 
-    this.camera = new Camera({mapWidth: mapWidth, mapHeight: mapHeight, player: this})
+
+    this.camera = new Camera(mapWidth, mapHeight, this)
 
     //Player attributes
     this.facing = 'S'
@@ -64,7 +73,7 @@ class SwordFighterUI{
     this.traceDrawn=false
     this.cloudAnimCount=0
     this.imageCloud=new Image()
-    this.imageCloud.src="../assets/images/DashCloud.png"
+    this.imageCloud.src="../assets/images/DashCloudS.png"
 
     //Strike Animation
     this.opacityRemovalRate = 0.1
@@ -204,39 +213,39 @@ class SwordFighterUI{
         c.lineCap = 'butt';
         //This is the strike trace. If you need to understand this and are confused, ask me to relearn it quickly and ill explain it on discord                      
         c.beginPath();           
-        c.moveTo(this.preStrikeX+(this.postStrikeCamX-this.preStrikeCamX)+((localPlayerWidth/2)*this.animationScale), this.preStrikeY+(this.postStrikeCamY-this.preStrikeCamY)+((localPlayerWidth/2)*this.animationScale));      
-        c.lineTo(this.postStrikeX+(this.postStrikeCamX-this.preStrikeCamX)+((localPlayerWidth/2)*this.animationScale), this.postStrikeY+(this.postStrikeCamY-this.preStrikeCamY)+((localPlayerWidth/2)*this.animationScale));     
+        c.moveTo(this.preStrikeX+(this.postStrikeCamX-this.preStrikeCamX)+((this.width/2)*this.animationScale), this.preStrikeY+(this.postStrikeCamY-this.preStrikeCamY)+((this.width/2)*this.animationScale));      
+        c.lineTo(this.postStrikeX+(this.postStrikeCamX-this.preStrikeCamX)+((this.width/2)*this.animationScale), this.postStrikeY+(this.postStrikeCamY-this.preStrikeCamY)+((this.width/2)*this.animationScale));     
         c.stroke(); 
     }
     //WILL NEED: scaling (Decide if that should be client or server), height (localPlayerWidth(position, camera, facing
     drawCloud(){
         if(this.traceDrawn==false){
             this.traceDrawn=true
-            if(speedDebuff<3&&this.isRunning&&this.strikeRecency<=0){
+            if(this.speedDebuff<3&&this.isRunning&&this.strikeRecency<=0){
                 if(this.facing=='S'){
                     this.imageCloud.src="../assets/images/DashTraceS.png"
-                    c.drawImage(this.imageCloud,0,0,localPlayerWidth,localPlayerHeight,this.position.x + this.camera.position.x,this.position.y + this.camera.position.y - localPlayerHeight/2,localPlayerWidth*this.animationScale,localPlayerHeight*this.animationScale)
+                    c.drawImage(this.imageCloud,0,0,this.width,this.height,this.position.x + this.camera.position.x,this.position.y + this.camera.position.y - this.height/2,this.width*this.animationScale,this.height*this.animationScale)
                 } else if(this.facing=='N'){
                     this.imageCloud.src="../assets/images/DashTraceN.png"
-                    c.drawImage(this.imageCloud,0,0,localPlayerWidth,localPlayerHeight,this.position.x + this.camera.position.x,this.position.y + this.camera.position.y + localPlayerHeight, localPlayerWidth*this.animationScale,localPlayerHeight*this.animationScale)
+                    c.drawImage(this.imageCloud,0,0,this.width,this.height,this.position.x + this.camera.position.x,this.position.y + this.camera.position.y + this.height, this.width*this.animationScale,this.height*this.animationScale)
                 } else if(this.facing=='W'){
                     this.imageCloud.src="../assets/images/DashTraceW.png"
-                    c.drawImage(this.imageCloud, 0, 0, localPlayerWidth, localPlayerHeight, this.position.x + this.camera.position.x+localPlayerWidth/2, this.position.y + this.camera.position.y,localPlayerWidth * this.animationScale,localPlayerHeight * this.animationScale);
+                    c.drawImage(this.imageCloud, 0, 0, this.width, this.height, this.position.x + this.camera.position.x+this.width/2, this.position.y + this.camera.position.y,this.width * this.animationScale,this.height * this.animationScale);
                 } else if (this.facing == 'E') {
                     this.imageCloud.src = "../assets/images/DashTraceE.png"
-                    c.drawImage(this.imageCloud,0,0,localPlayerWidth,localPlayerHeight,this.position.x + this.camera.position.x-localPlayerWidth/2,this.position.y + this.camera.position.y,localPlayerWidth*this.animationScale,localPlayerHeight*this.animationScale)
+                    c.drawImage(this.imageCloud,0,0,this.width,this.height,this.position.x + this.camera.position.x-this.width/2,this.position.y + this.camera.position.y,this.width*this.animationScale,this.height*this.animationScale)
                 } else if (this.facing == 'NE') {
                     this.imageCloud.src = "../assets/images/DashTraceNE.png";
-                    c.drawImage(this.imageCloud, 0, 0, localPlayerWidth, localPlayerHeight, this.position.x + this.camera.position.x - localPlayerWidth/2.5, this.position.y + this.camera.position.y + localPlayerHeight/2, localPlayerWidth * this.animationScale, localPlayerHeight * this.animationScale);
+                    c.drawImage(this.imageCloud, 0, 0, this.width, this.height, this.position.x + this.camera.position.x - this.width/2.5, this.position.y + this.camera.position.y + this.height/2, this.width * this.animationScale, this.height * this.animationScale);
                 } else if (this.facing == 'NW') {
                     this.imageCloud.src = "../assets/images/DashTraceNW.png";
-                    c.drawImage(this.imageCloud, 0, 0, localPlayerWidth, localPlayerHeight, this.position.x + this.camera.position.x + localPlayerWidth/2.5, this.position.y + this.camera.position.y + localPlayerHeight/2, localPlayerWidth * this.animationScale, localPlayerHeight * this.animationScale);
+                    c.drawImage(this.imageCloud, 0, 0, this.width, this.height, this.position.x + this.camera.position.x + this.width/2.5, this.position.y + this.camera.position.y + this.height/2, this.width * this.animationScale, this.height * this.animationScale);
                 } else if (this.facing == 'SE') {
                     this.imageCloud.src = "../assets/images/DashTraceSE.png";
-                    c.drawImage(this.imageCloud, 0, 0, localPlayerWidth, localPlayerHeight, this.position.x + this.camera.position.x - localPlayerWidth/2.5, this.position.y + this.camera.position.y - localPlayerHeight/2, localPlayerWidth * this.animationScale, localPlayerHeight * this.animationScale);
+                    c.drawImage(this.imageCloud, 0, 0, this.width, this.height, this.position.x + this.camera.position.x - this.width/2.5, this.position.y + this.camera.position.y - this.height/2, this.width * this.animationScale, this.height * this.animationScale);
                 } else if (this.facing == 'SW') {
                     this.imageCloud.src = "../assets/images/DashTraceSW.png";
-                    c.drawImage(this.imageCloud, 0, 0, localPlayerWidth, localPlayerHeight, this.position.x + this.camera.position.x + localPlayerWidth/2.5, this.position.y + this.camera.position.y - localPlayerHeight/2, localPlayerWidth * this.animationScale, localPlayerHeight * this.animationScale);
+                    c.drawImage(this.imageCloud, 0, 0, this.width, this.height, this.position.x + this.camera.position.x + this.width/2.5, this.position.y + this.camera.position.y - this.height/2, this.width * this.animationScale, this.height * this.animationScale);
                 }
             }
         }
@@ -267,7 +276,7 @@ class SwordFighterUI{
         // 
         // The camera is acting as an offset to keep him on the center of your screen, as he moves across the map.
         
-        c.drawImage(this.imageFox,50*(Math.floor(this.animCount/slowdown)),0,localPlayerWidth,localPlayerHeight,this.position.x + this.camera.position.x,position.y + this.camera.position.y,localPlayerWidth*this.animationScale,localPlayerHeight*this.animationScale)
+        c.drawImage(this.imageFox,50*(Math.floor(this.animCount/slowdown)),0,this.width,this.height,this.position.x + this.camera.position.x,this.position.y + this.camera.position.y,this.width*this.animationScale,this.height*this.animationScale)
         this.animCount+=1
 
         //Draw cloud/trace in front of elements (if necessary)
@@ -279,6 +288,8 @@ class SwordFighterUI{
 class StrikeCircleUI {
     constructor(radius, screenPosition){
         //Play random set sound
+        this.strikeCircle = new Image()
+        this.strikeCircle.src = "public/assets/images/StrikePoint.png"
         set.currentTime = 0;
         set.volume = 0.65;
         let randomOutcome = Math.floor(Math.random()*3)
@@ -291,6 +302,7 @@ class StrikeCircleUI {
         }
         set.play()
 
+        this.scaling=1.2
         this.radius = radius
         this.screenPosition = screenPosition
     }
@@ -315,12 +327,15 @@ class BackMap{
 
     draw() {
         //c.drawImage(this.image, this.position.x, this.position.y)
+        
+        //console.log(this.mapImage.src)
         c.drawImage(this.mapImage,0,0,this.width/this.upscale,this.height/this.upscale,this.position.x,this.position.y,this.width,this.height)
 
     }
 
     draw({position}) {
         this.position=position
+        console.log('map draw entered', this.position.x)
         //c.drawImage(this.mapImage, this.position.x, this.position.y)
         c.drawImage(this.mapImage,0,0,this.width/this.upscale,this.height/this.upscale,this.position.x,this.position.y,this.width,this.height)
 

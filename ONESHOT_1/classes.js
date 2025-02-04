@@ -1,41 +1,18 @@
 class StrikePoint{
-    constructor({position, ownerFighter, color = 'blue'}){
+    constructor({position, ownerFighter,cameraPos}){
         this.self = this
-        this.screenPosition = position
-        this.truePosX = position.x + Math.abs(camera.x)
-        this.truePosY = position.y + Math.abs(camera.y)
-        this.radius = 175
-        this.color = color
-        this.initialCamX=camera.x
-        this.initialCamY=camera.y
-        this.strikeCircle = new Image()
-        this.strikeCircle.src = "public/assets/images/StrikePoint.png"
-        this.scaling=1.2
+        this.truePosX = position.x + Math.abs(cameraPos.x)
+        this.truePosY = position.y + Math.abs(cameraPos.y)
+        this.initialCamX=cameraPos.x
+        this.initialCamY=cameraPos.y
+        
         this.fighter=ownerFighter
-    }
-
-    update() {
-        this.draw()
     }
 
     //Update owner fighter's position to center of strike point
     strike() {
         this.fighter.position.x = this.truePosX-(this.fighter.width*this.fighter.animationScale/2)
         this.fighter.position.y = this.truePosY-(this.fighter.height*this.fighter.animationScale/2)
-        let randomOutcome = Math.floor(Math.random()*3)
-        if(randomOutcome==0){
-            slash1.volume=0.7
-            slash1.currentTime = 0;
-            slash1.play()
-        } else if(randomOutcome==1){
-            slash2.volume=0.7
-            slash2.currentTime = 0;
-            slash2.play()
-        } else if(randomOutcome==2){
-            slash3.volume=0.7
-            slash3.currentTime = 0;
-            slash3.play()
-        }
     }
 }
 
@@ -73,16 +50,6 @@ class SwordFighter{
         //Strike Attributes
         this.strikeRecency = 0
         this.strikeLag = 0.7
-
-        //All of these are to create the vectors necessary to adjust the position of the strike trace thing on screen
-        this.preStrikeX = 0
-        this.preStrikeCamX = 0
-        this.preStrikeY = 0
-        this.preStrikeCamY = 0
-        this.postStrikeX = 0
-        this.postStrikeCamX = 0
-        this.postStrikeY = 0
-        this.postStrikeCamY = 0
 
         this.inputData = {
             keys : {
@@ -185,13 +152,11 @@ class SwordFighter{
         //If the strikepoint connected to the player is placed, detect if he is in it's radius.
         //If he is then strike. (See the method for comments on what it does)
         if(this.point){
-            if(detectCircleFighterCollision(this.point.truePosX,this.point.truePosY,this.point.radius, this)&&!this.isSetting){
+            if(this.detectCircleFighterCollision(this.point.truePosX,this.point.truePosY,this.point.radius, this)&&!this.isSetting){
 
 
                 console.log("IN CIRCLE", true)
                 this.point.strike()
-                this.postStrikeX=this.position.x +camera.x
-                this.postStrikeY=this.position.y +camera.y
                 this.point = null
                 this.strikeRecency = 1.1;
                 this.animCount=0
@@ -235,16 +200,16 @@ class SwordFighter{
         const diagonalSpeed = isMovingVertically && isMovingHorizontally ? speed / Math.sqrt(2) : speed;
 
         if (this.inputData.keys.a.pressed) {
-            player.velocity.x = -diagonalSpeed;
+            this.velocity.x = -diagonalSpeed;
         }
         if (this.inputData.keys.d.pressed) {
-            player.velocity.x = diagonalSpeed;
+            this.velocity.x = diagonalSpeed;
         }
         if (this.inputData.keys.w.pressed) {
-            player.velocity.y = -diagonalSpeed;
+            this.velocity.y = -diagonalSpeed;
         }
         if (this.inputData.keys.s.pressed) {
-            player.velocity.y = diagonalSpeed;
+            this.velocity.y = diagonalSpeed;
         }
 
         this.previousFacing = this.facing;  // Update the lastMovementKey for next frame comparison
@@ -252,16 +217,15 @@ class SwordFighter{
     }
 
 
-    setStrikePoint(strikeData) {
+    setStrikePoint(strikeData, cameraPos) {
         //Make sure he isin't already setting, so you can't cancel one set with another.
         //The animation isin't very long to begin with but it's just a small delay so you can't instantly readjust
         if(!this.isSetting&&!this.parry.isParrying){
             this.isSetting = true
 
             
-
             //the "-7s" here are to offset the top corner of the screen, which is just occupied by whitespace. I might need to actually deal with this in HTML/CSS later, make the game fullscreen offrip or something, since that white space may or may not be different            this.point = new StrikePoint({position: {x: mouseX -7, y: mouseY-7},ownerFighter:this.self})
-            this.point = new StrikePoint({position: {x: strikeData.mouse.x -strikeData.canvasOffset.x, y: strikeData.mouse.y-strikeData.canvasOffset.y},ownerFighter:this.self})
+            this.point = new StrikePoint({position: {x: strikeData.mouse.x -strikeData.canvasOffset.x, y: strikeData.mouse.y-strikeData.canvasOffset.y},ownerFighter:this.self,cameraPos:cameraPos})
             //This is the delay, 0.5 seconds before the tag (this.isSetting) becomes false
             setTimeout(()=>{
                 this.isSetting=false

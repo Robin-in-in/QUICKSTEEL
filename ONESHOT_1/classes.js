@@ -1,12 +1,13 @@
 class StrikePoint{
     constructor({position, ownerFighter,cameraPos}){
         this.self = this
+        this.position = {x:position.x,y:position.y}
+        //Need to implement checks such that even if client edits camera, this can never end up outside of canvas
         this.truePosX = position.x + Math.abs(cameraPos.x)
-        this.truePosY = position.y + Math.abs(cameraPos.y)
-        this.initialCamX=cameraPos.x
-        this.initialCamY=cameraPos.y
+        this.truePosY = position.y + Math.abs(cameraPos.y) 
         
         this.fighter=ownerFighter
+        this.radius=175
     }
 
     //Update owner fighter's position to center of strike point
@@ -36,7 +37,7 @@ class SwordFighter{
         //Dimensions of original sprite
         this.height=50
         this.width=50
-        this.animationScale=2.2
+        this.animationScale=2.5
         
         //Attributes
         this.isSetting = false
@@ -225,8 +226,9 @@ class SwordFighter{
 
             
             //the "-7s" here are to offset the top corner of the screen, which is just occupied by whitespace. I might need to actually deal with this in HTML/CSS later, make the game fullscreen offrip or something, since that white space may or may not be different            this.point = new StrikePoint({position: {x: mouseX -7, y: mouseY-7},ownerFighter:this.self})
-            this.point = new StrikePoint({position: {x: strikeData.mouse.x -strikeData.canvasOffset.x, y: strikeData.mouse.y-strikeData.canvasOffset.y},ownerFighter:this.self,cameraPos:cameraPos})
+            this.point = new StrikePoint({position: {x: strikeData.mouse.x, y: strikeData.mouse.y},ownerFighter:this.self,cameraPos:cameraPos})
             //This is the delay, 0.5 seconds before the tag (this.isSetting) becomes false
+            console.log("B. Set point with following data:", this.point)
             setTimeout(()=>{
                 this.isSetting=false
             }, 500)

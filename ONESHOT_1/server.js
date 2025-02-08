@@ -22,13 +22,17 @@ io.on('connection', (socket) => {
     console.log('New connection:', socket.id)
     const fighter = new SwordFighter({fighterID: socket.id})
     fighters.set(socket.id, fighter)
-    socket.emit('initial',fighter.mapWidth, fighter.mapHeight, fighter.width, fighter.height, socket.id, fighter.animationScale)
+    socket.emit('initial',fighter.mapWidth, fighter.mapHeight, fighter.width, fighter.height, socket.id, fighter.animationScale, fighters.size)
 
     const updatesPerSecond = 60
     const updateLoop = setInterval(() => {
+        let pointPosition=-1
         
         fighter.update()
-        socket.emit('update', fighter.width, fighter.height, socket.id, fighter.position, fighter.facing, fighter.isRunning, fighter.isSetting, fighter.parry, fighter.strikeRecency, fighter.speedDebuff )
+        if(fighter.point!=null){
+            pointPosition=fighter.point.position
+        }
+        socket.emit('update', fighter.width, fighter.height, socket.id, fighter.position, fighter.facing, fighter.isRunning, fighter.isSetting, fighter.parry, fighter.strikeRecency, fighter.speedDebuff, pointPosition)
     }, 1000/updatesPerSecond)
 
     socket.on('inputs', (inputData) => {
@@ -43,6 +47,7 @@ io.on('connection', (socket) => {
 
     socket.on('strike',(strikeData,cameraPos) => {
         if (strikeData && strikeData.mouse.x && cameraPos) {
+            console.log("A. Setting strike point w/ following data:", strikeData)
             fighter.setStrikePoint(strikeData,cameraPos)
         } else {
             console.warn('Received invalid strikeData or cameraPos:', strikeData);

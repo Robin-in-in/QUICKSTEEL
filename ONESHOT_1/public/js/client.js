@@ -1,3 +1,5 @@
+//MADE IN COLLABORATION WITH TYSON LINE - type out README.MD
+
 const socket = io('http://localhost:3001');
 let player = null
 
@@ -15,30 +17,9 @@ let screenWidth = window.innerWidth;
 let screenHeight = window.innerHeight;
 
 
-const canvas = document.querySelector('canvas')
-canvas.width = 1024
-canvas.height = 576
-const c = canvas.getContext('2d')
-
-let canvasOffsetX = (screenWidth-canvas.width)/2
-let canvasOffsetY = (screenHeight-canvas.height)/2
-
-
-
-
-c.fillRect(0,0, canvas.width, canvas.height)
-
-//List all audio files here, played within draw loop 
-const parry1 = new Audio("../assets/sounds/fox_parry_1.mp3")
-const parry2 = new Audio("../assets/sounds/fox_parry_2.mp3")
-const parry3 = new Audio("../assets/sounds/fox_parry_3.mp3")
-const slash1 = new Audio("../assets/sounds/fox_slash_1.mp3")
-const slash2 = new Audio("../assets/sounds/fox_slash_2.mp3")
-const slash3 = new Audio("../assets/sounds/fox_slash_3.mp3")
-const set = new Audio("../assets/sounds/fox_set_1.mp3")
-const backgroundWind = new Audio("../assets/sounds/backgroundWind.mp3")
-backgroundWind.loop = true
-backgroundWind.play()
+let rect = canvas.getBoundingClientRect(); // Get canvas position and size
+let scaleX = canvas.width / rect.width;  // Fix scaling if the canvas is resized with CSS
+let scaleY = canvas.height / rect.height;
 
 let inputData ={
     keys : {
@@ -62,21 +43,21 @@ let inputData ={
 }
 
 let strikeData ={
-    canvasOffset: {x:0,y:0},
     mouse: {x:0,y:0}
 }
 
 // Track mouse position
 window.addEventListener('mousemove', (event) => {
-    strikeData.mouse.x = event.clientX;
-    strikeData.mouse.y = event.clientY;
+    
+    strikeData.mouse.x = (event.clientX - rect.left) * scaleX;
+    strikeData.mouse.y = (event.clientY - rect.top) * scaleY;
 });
 
 // Detect left-click
 window.addEventListener('mousedown', (event) => {
     if (event.button === 0) { // 0 is the code for the left mouse button
-        console.log('left click');
-        console.log(strikeData.mouse.x)
+        //console.log('left click');
+        //console.log(strikeData.mouse.x)
         if (player.animCount > 30) {
             player.animCount = 0;
         }
@@ -173,16 +154,16 @@ window.addEventListener('keyup', (event) =>{
 })
 
 
-socket.on('initial', (mapWidth, mapHeight, playerWidth, playerHeight, fighterID, playerScaling) => {
+socket.on('initial', (mapWidth, mapHeight, playerWidth, playerHeight, fighterID, playerScaling, playerNumber) => {
     //When client connects, the server will send the initial data. This is where we set it up.
-    player = new SwordFighterUI(playerWidth, playerHeight, fighterID, playerScaling, mapWidth, mapHeight)
+    player = new SwordFighterUI(playerWidth, playerHeight, fighterID, mapWidth, mapHeight, playerScaling, playerNumber)
 });
 
-socket.on('update', (playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry, strikeRecency, speedDebuff) => {
+socket.on('update', (playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry, strikeRecency, speedDebuff, serverPointPosition) => {
     //Server will send updates to the client, this is where we update the client based on the server's dapositiposition
-    
+    //console.log("POINT POSITION X ON UPDATE",serverPointPosition)
     //TODO: Will have to figure out a way to give unique ID's to each player- shouldn't be hard, only 1v1 for now
-    player.refreshAttributes(playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry.isParrying, strikeRecency, speedDebuff)
+    player.refreshAttributes(playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry.isParrying, strikeRecency, speedDebuff, serverPointPosition)
     
 })
 
@@ -200,24 +181,21 @@ function animate(timestamp){
 
         screenWidth = window.innerWidth;
         screenHeight = window.innerHeight;
-        strikeData.canvasOffset.x = (screenWidth-canvas.width)/2
-        strikeData.canvasOffset.y = (screenHeight-canvas.height)/2
+        rect = canvas.getBoundingClientRect(); // Get canvas position and size
+        scaleX = canvas.width / rect.width;  // Fix scaling if the canvas is resized with CSS
+        scaleY = canvas.height / rect.height;
 
         c.fillStyle = "black"
         c.fillRect(0,0,canvas.width,canvas.height)
-        if(player!=null){
-            player.camera.background.draw({position:{x:player.camera.position.x, y:player.camera.position.y}})
-            
-            const mapImgTest = new Image()
-            mapImgTest.src = '../assets/images/background2.png'
-            c.drawImage(mapImgTest, 0, 0)
-        
+        if(player!=null){     
+
             //Update each object
             player.draw();
             player.camera.update();
     
             if(player.point){
-                player.point.update();
+                //console.log("Player point created, drawing.")
+                player.point.draw();
             }
         } 
     }

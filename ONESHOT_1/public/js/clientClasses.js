@@ -1,4 +1,19 @@
-//Dynamically adjustsposition of things on screen based of things 
+//Dynamically adjust position of things on screen based of things 
+const canvas = document.querySelector('canvas')
+canvas.width = 1024
+canvas.height = 576
+const c = canvas.getContext('2d')
+
+//List all audio files here, played within draw loop 
+const parry1 = new Audio("../assets/sounds/fox_parry_1.mp3")
+const parry2 = new Audio("../assets/sounds/fox_parry_2.mp3")
+const parry3 = new Audio("../assets/sounds/fox_parry_3.mp3")
+let slash = new Audio("../assets/sounds/fox_slash_1.mp3")
+let set = new Audio("../assets/sounds/fox_set_1.mp3")
+const backgroundWind = new Audio("../assets/sounds/backgroundWind.mp3")
+backgroundWind.loop = true
+backgroundWind.play()
+
 class Camera {
     //TODO: Should all be calculated in backend and return the updated positions in emit to sender 
     //WILL NEED: mapWidth, mapHeight (should both be locally availabposition, fighterID (locally available, unless I decide to update it every update to prevent big bugs)
@@ -6,29 +21,41 @@ class Camera {
       this.fighter = player
       this.mapWidth = mapWidth
       this.mapHeight = mapHeight
+      this.postStrikeTarget = {
+        x:0, 
+        y:0
+     }
 
       this.position = {
         x:this.mapWidth/2,
         y:this.mapHeight/2
       }
 
-      this.smoothness = 0.5; // Adjust for desired smoothness
-      this.background = new BackMap({position: {x:0,y:0}, imageSrc:'../assets/images/background2.png',width: 1950,height: 1300,upscale:1})
+      this.smoothness = 0.25; // Adjust for desired smoothness
+      this.background = new BackMap({x:0,y:0}, '../assets/images/background2.png',1950,1300,4)
 
       this.mapImage = new Image()
-      this.mapImage.src = this.background.imageSrc
+      this.mapImage.src = this.background.mapImage.src
     }
   
     update() {
+
+        
+
       let targetX = -(this.fighter.position.x - (canvas.width / 2));
       let targetY = -(this.fighter.position.y - (canvas.height / 2));
 
       targetX = Math.min(0, Math.max(targetX, -(this.mapWidth) + canvas.width));
       targetY = Math.min(0, Math.max(targetY, -(this.mapHeight) + canvas.height));
 
+      this.postStrikeTarget.x = targetX
+      this.postStrikeTarget.y = targetY
+
+
       // Smoothly move the camera
-      this.x += (targetX - this.position.x) * this.smoothness;
-      this.y += (targetY - this.position.y) * this.smoothness;
+      this.position.x += (targetX - this.position.x) * this.smoothness;
+      this.position.y += (targetY - this.position.y) * this.smoothness;
+
     }
 
     mapDraw(){
@@ -46,15 +73,21 @@ class Camera {
 }
 
 class SwordFighterUI{
-    constructor(width,height,fighterID, mapWidth, mapHeight){
+    constructor(width,height,fighterID, mapWidth, mapHeight, playerScaling, playerNumber){
     //Player Animation
     this.animCount=0
     this.animLayer=0
     this.animSlowdown=0
     this.imageFox=new Image()
-    this.imageFox.src="../assets/images/IdleFoxS.png"
+    this.playerNumber=playerNumber
+    if(this.playerNumber>1){
+        this.imageFox.src="../assets/images/IdleFoxS_blue.png"   
+    } else{
+        this.imageFox.src="../assets/images/IdleFoxS.png"
+    }
     this.width=width
     this.height=height
+    
 
     this.position = {x:0, y:0}
 
@@ -79,26 +112,35 @@ class SwordFighterUI{
     this.opacityRemovalRate = 0.1
 
     //General Animation
-    this.animationScale=2.2
-    this.preStrikeCamX= this.camera.x
-    this.preStrikeCamY= this.camera.y
+    this.animationScale=playerScaling
+    this.preStrike = {cam: {x:0,y:0},player:{x:0,y:0}}
+    this.postStrike = {cam: {x:0,y:0},player:{x:0,y:0}}
     this.currentStrikeOpacity = 0;
 
     this.fighterID = fighterID
+    this.point = null
     
     }
 
-    refreshAttributes(width,height,fighterID,position, facing, isRunning, isSetting, isParrying, strikeRecency, speedDebuff){
+    refreshAttributes(width,height,fighterID,position, facing, isRunning, isSetting, isParrying, strikeRecency, speedDebuff, serverPointPosition){
         if(this.fighterID == fighterID){
             this.facing = facing
             this.isRunning = isRunning
             this.isSetting = isSetting
             this.isParrying = isParrying
             this.strikeRecency = strikeRecency
+            this.currentStrikeOpacity=0
             this.speedDebuff = speedDebuff
             this.width=width
             this.height=height
             this.position = position
+            if(!this.point && serverPointPosition!=-1){
+                this.point = new StrikeCircleUI(serverPointPosition, this)            
+            } else if (this.point && serverPointPosition==-1){
+                this.point = null
+            } else {
+                this.point.refresh(serverPointPosition)
+            }
         }     
     }
 
@@ -106,25 +148,39 @@ class SwordFighterUI{
     //Will need camera, strikeRecency, id  preStrikeCamX, preStrikeCamY (<-I can get those two natively from client I think?)
     draw() {
         //FIRST Draw the strike trace if there should be one. Do this first so that anything else is drawn over it
-
-
+        this.camera.background.draw({position:{x:this.camera.position.x, y:this.camera.position.y}})
+        
 
 
         /*This is really not my favourite way to do this, but it's the only way I can think of right now. postStrikeCamX and postStrikeCamY should only be updated once per strike, 
          I don't know if frame skipping might have a chance to break this though. I'm leaving a bit of margin of error to update between 1.1 ad 0.9, so that it doesn't break if it's not exactly 1.0
          This should theoretically prevent the strike trace from going scitzo on most setups, but it's a possibility for sure.*/
-        if(this.strikeRecency>0.9){
-            this.postStrikeCamX=this.camera.position.x
-            this.postStrikeCamY=this.camera.position.y
-            drawStrike()
-        } else if(this.strikeRecency>0){
-            drawStrike()
+        if(this.strikeRecency==0.9){
+            this.postStrike.cam.x = this.camera.position.x
+            this.postStrike.player.x = this.position.x + this.camera.position.x
+            this.postStrike.cam.y = this.camera.position.y
+            this.postStrike.player.y = this.position.y + this.camera.position.y
+            slash.currentTime = 0;
+            slash.volume = 0.65;
+            let randomOutcome = Math.floor(Math.random()*3)
+            if(randomOutcome==0){
+                slash.src="../assets/sounds/fox_slash_1.mp3"
+            } else if(randomOutcome==1){
+                slash.src="../assets/sounds/fox_slash_2.mp3"
+            } else if(randomOutcome==2){
+                slash.src="../assets/sounds/fox_slash_3.mp3"
+            }
+            slash.play()
+            set.pause()      
+            this.drawStrike()
+        } else if(this.strikeRecency>0&&this.strikeRecency<0.9){
+            this.drawStrike()
         }
-        else{
-            this.preStrikeX=this.position.x+this.camera.position.x
-            this.preStrikeY=this.position.y+this.camera.position.y
-            this.preStrikeCamX=this.camera.position.x
-            this.preStrikeCamY=this.camera.position.y
+        else if(this.strikeRecency<=0){
+            this.preStrike.cam.x = this.camera.position.x
+            this.preStrike.player.x = this.position.x + this.camera.position.x
+            this.preStrike.cam.y = this.camera.position.y
+            this.preStrike.player.y = this.position.y + this.camera.position.y
         }
 
         //SECOND These are all the animations related to the actual player, seperated for clarity
@@ -134,8 +190,11 @@ class SwordFighterUI{
             this.animateSwordFighter(4,12,0,this.animationScale)
         } else{
             if(this.isParrying){
-                console.log("PARRY")
-                this.imageFox.src="../assets/images/ParryFoxFull.png"
+                if(this.playerNumber>1){
+                    this.imageFox.src="../assets/image/ParryFoxFull_blue.png"
+                } else{
+                    this.imageFox.src="../assets/images/ParryFoxFull.png"
+                }
                 this.animateSwordFighter(4,16,0,this.animationScale)
                 set.pause();
                 set.currentTime = 0;
@@ -157,48 +216,114 @@ class SwordFighterUI{
                 }
             }
             else if(this.isSetting){
-                this.imageFox.src="../assets/images/IsSetting.png"
+                if(this.playerNumber>1){
+                    this.imageFox.src="../assets/images/IsSetting_blue.png"
+                } else{
+                    this.imageFox.src="../assets/images/IsSetting.png"
+                }
+                if(set.paused){
+                    set.currentTime = 0;
+                    set.volume = 0.65;
+                    let randomOutcome = Math.floor(Math.random()*3)
+                    if(randomOutcome==0){
+                        set.src="../assets/sounds/fox_set_1.mp3"
+                    } else if(randomOutcome==1){
+                        set.src="../assets/sounds/fox_set_2.mp3"
+                    } else if(randomOutcome==2){
+                        set.src="../assets/sounds/fox_set_3.mp3"
+                    }
+                    set.play()
+                }
                 this.animateSwordFighter(7,49,0,this.animationScale)
             }else{
                 if(this.isRunning){
                     if(this.facing=='S'){
-                        this.imageFox.src="../assets/images/RunFoxS.png"
+                        if(this.playerNumber>1){
+                            this.imageFox.src="../assets/images/RunFoxS_blue.png"
+                        } else{
+                           this.imageFox.src="../assets/images/RunFoxS.png" 
+                        }
+                        
                         this.animateSwordFighter(10,30,0,this.animationScale)   
                     } else if(this.facing=='SW'){
-                        this.imageFox.src="../assets/images/RunFoxSW.png"
+                        if(this.playerNumber>1){
+                            this.imageFox.src="../assets/images/RunFoxSW_blue.png"
+                        } else{
+                            this.imageFox.src="../assets/images/RunFoxSW.png"
+                        }
                         this.animateSwordFighter(10,40,20,this.animationScale)
                     } else if(this.facing=='SE'){
-                        this.imageFox.src="../assets/images/RunFoxSE.png"
+                        if(this.playerNumber>1){
+                            this.imageFox.src="../assets/images/RunFoxSE_blue.png"
+                        } else{
+                            this.imageFox.src="../assets/images/RunFoxSE.png"
+                        }
                         this.animateSwordFighter(10,40,20,this.animationScale)
                     }else if(this.facing=='N'){
-                        this.imageFox.src="../assets/images/RunFoxNsheet.png"
+                        if(this.playerNumber>1){
+                            this.imageFox.src="../assets/images/RunFoxN_blue.png"
+                        } else{
+                            this.imageFox.src="../assets/images/RunFoxNsheet.png"
+                        }
                         this.animateSwordFighter(10,20,0,this.animationScale)
                         
                     } else if(this.facing=='NE'){
-                        this.imageFox.src="../assets/images/RunFoxNE.png"
+                        if(this.playerNumber>1){
+                            this.imageFox.src="../assets/images/RunFoxNE_blue.png"
+                        } else{
+                            this.imageFox.src="../assets/images/RunFoxNE.png"
+                        }
                         this.animateSwordFighter(10,40,20,this.animationScale)
                     }else if(this.facing=='NW'){
-                        this.imageFox.src="../assets/images/RunFoxNW.png"
+                        if(this.playerNumber>1){
+                            this.imageFox.src="../assets/images/RunFoxNW_blue.png"
+                        } else{
+                            this.imageFox.src="../assets/images/RunFoxNW.png"
+                        }
                         this.animateSwordFighter(10,40,20,this.animationScale)
                     }else if(this.facing=='W'){
-                        this.imageFox.src="../assets/images/RunFoxW.png"
+                        if(this.playerNumber>1){
+                            this.imageFox.src="../assets/images/RunFoxW_blue.png"
+                        } else{
+                            this.imageFox.src="../assets/images/RunFoxW.png" 
+                        }
                         this.animateSwordFighter(10,20,0,this.animationScale)
                     } else if(this.facing=='E'){
-                        this.imageFox.src="../assets/images/RunFoxE.png"
+                        if(this.playerNumber>1){
+                            this.imageFox.src="../assets/images/RunFoxE_blue.png"
+                        } else{
+                            this.imageFox.src="../assets/images/RunFoxE.png"
+                        }
                         this.animateSwordFighter(10,20,0,this.animationScale)
                     }
                 } else{
                     if(this.facing=='S'){
-                        this.imageFox.src="../assets/images/IdleFoxS.png"
+                        if(this.playerNumber>1){
+                            this.imageFox.src="../assets/images/IdleFoxS_blue.png"
+                        } else{
+                            this.imageFox.src="../assets/images/IdleFoxS.png"
+                        }
                         this.animateSwordFighter(10,20,0,this.animationScale)
                     } else if(this.facing=='N'){
-                        this.imageFox.src="../assets/images/IdleFoxN.png"
+                        if(this.playerNumber>1){
+                            this.imageFox.src="../assets/images/IdleFoxN_blue.png"
+                        } else{
+                            this.imageFox.src="../assets/images/IdleFoxN.png"
+                        }
                         this.animateSwordFighter(10,20,0,this.animationScale)
                     } else if(this.facing=='W'){
-                        this.imageFox.src="../assets/images/IdleFoxW.png"
+                        if(this.playerNumber>1){
+                            this.imageFox.src="../assets/images/IdleFoxW_blue.png"
+                        } else{
+                            this.imageFox.src="../assets/images/IdleFoxW.png"
+                        }
                         this.animateSwordFighter(10,60,0,this.animationScale)
                     } else if(this.facing=='E'){
-                        this.imageFox.src="../assets/images/IdleFoxE.png"
+                        if(this.playerNumber>1){
+                            this.imageFox.src="../assets/images/IdleFoxE_blue.png"
+                        } else{
+                            this.imageFox.src="../assets/images/IdleFoxE.png"
+                        }
                         this.animateSwordFighter(10,20,0,this.animationScale)
                     }
                 }
@@ -207,14 +332,14 @@ class SwordFighterUI{
     }
     
     drawStrike(){
-        this.currentStrikeOpacity = this.strikeRecency
-        c.strokeStyle = 'rgba(216, 229, 234, '+this.currentStrikeOpacity+')';
+        c.strokeStyle = 'rgba(216, 229, 234, '+this.strikeRecency+')';
         c.lineWidth = 20;                           
-        c.lineCap = 'butt';
+        c.lineCap = 'square';
+        
         //This is the strike trace. If you need to understand this and are confused, ask me to relearn it quickly and ill explain it on discord                      
         c.beginPath();           
-        c.moveTo(this.preStrikeX+(this.postStrikeCamX-this.preStrikeCamX)+((this.width/2)*this.animationScale), this.preStrikeY+(this.postStrikeCamY-this.preStrikeCamY)+((this.width/2)*this.animationScale));      
-        c.lineTo(this.postStrikeX+(this.postStrikeCamX-this.preStrikeCamX)+((this.width/2)*this.animationScale), this.postStrikeY+(this.postStrikeCamY-this.preStrikeCamY)+((this.width/2)*this.animationScale));     
+        c.moveTo(this.preStrike.player.x+(this.camera.position.x-this.postStrike.cam.x)+(this.postStrike.cam.x-this.preStrike.cam.x)+((this.width/2)*this.animationScale), this.preStrike.player.y+(this.camera.position.y-this.postStrike.cam.y)+(this.postStrike.cam.y-this.preStrike.cam.y)+((this.width/2)*this.animationScale));      
+        c.lineTo(this.postStrike.player.x+(this.camera.position.x-this.postStrike.cam.x)+((this.width/2)*this.animationScale), this.postStrike.player.y+(this.camera.position.y-this.postStrike.cam.y)+((this.width/2)*this.animationScale));     
         c.stroke(); 
     }
     //WILL NEED: scaling (Decide if that should be client or server), height (localPlayerWidth(position, camera, facing
@@ -286,40 +411,37 @@ class SwordFighterUI{
 }
 
 class StrikeCircleUI {
-    constructor(radius, screenPosition){
+    constructor(screenPosition, player){
         //Play random set sound
+
+        this.fighter = player
         this.strikeCircle = new Image()
-        this.strikeCircle.src = "public/assets/images/StrikePoint.png"
-        set.currentTime = 0;
-        set.volume = 0.65;
-        let randomOutcome = Math.floor(Math.random()*3)
-        if(randomOutcome==0){
-            set.src="public/assets/sounds/fox_set_1.mp3"
-        } else if(randomOutcome==1){
-            set.src="public/assets/sounds/fox_set_2.mp3"
-        } else if(randomOutcome==2){
-            set.src="public/assets/sounds/fox_set_3.mp3"
-        }
-        set.play()
+        this.strikeCircle.src = "../assets/images/StrikePoint.png"
 
         this.scaling=1.2
-        this.radius = radius
+        this.radius = 175
         this.screenPosition = screenPosition
+
+        this.initialCamX = this.fighter.camera.position.x
+        this.initialCamY = this.fighter.camera.position.y
     }
 
     draw() {
         c.imageSmoothingEnabled=false;
-        c.drawImage(this.strikeCircle,0,0,this.radius*2,this.radius*2,this.screenPosition.x+(this.camera.position.x-this.initialCamX)-this.scaling*this.radius,this.screenPosition.y+(this.camera.position.y-this.initialCamY)-this.scaling*this.radius,this.radius*2*this.scaling,this.radius*2*this.scaling)
+        c.drawImage(this.strikeCircle,0,0,this.radius*2,this.radius*2,this.screenPosition.x-(this.initialCamX-this.fighter.camera.position.x)-this.scaling*this.radius,this.screenPosition.y-(this.initialCamY-this.fighter.camera.position.y)-this.scaling*this.radius,this.radius*2*this.scaling,this.radius*2*this.scaling)    }
+
+    refresh(serverStrikeCirclePosition){
+        this.screenPosition = serverStrikeCirclePosition
     }
 }
 
 class BackMap{
-    constructor({position, imageSrc, width, height,upscale}) {
+    constructor(position, imageSrc, width, height,upscale) {
         this.position = position
         this.mapImage = new Image()
         this.mapImage.src = imageSrc
         this.width = width
-        this.height = height
+        this.height =height
         this.upscale=upscale
 
         this.animCount=0
@@ -328,33 +450,23 @@ class BackMap{
     draw() {
         //c.drawImage(this.image, this.position.x, this.position.y)
         
-        //console.log(this.mapImage.src)
         c.drawImage(this.mapImage,0,0,this.width/this.upscale,this.height/this.upscale,this.position.x,this.position.y,this.width,this.height)
 
     }
 
     draw({position}) {
         this.position=position
-        console.log('map draw entered', this.position.x)
-        //c.drawImage(this.mapImage, this.position.x, this.position.y)
         c.drawImage(this.mapImage,0,0,this.width/this.upscale,this.height/this.upscale,this.position.x,this.position.y,this.width,this.height)
-
     }
 
     animateMap({position,start,max,slowdown}){
         if(this.animCount>=max){
             this.animCount=start
         }
-        //console.log("max", max)
-        //console.log("start", start)
-        //console.log("mapAnimCount:", this.animCount)
-        //console.log("Map positionX", position.x)
         this.position=position
         c.drawImage(this.mapImage,488*(Math.floor(this.animCount/slowdown)),0,this.width/this.upscale,this.height/this.upscale,this.position.x,this.position.y,this.width,this.height)
         this.animCount+=1
     }
 
-    update() {
-        this.draw()
-    }
+
 }  

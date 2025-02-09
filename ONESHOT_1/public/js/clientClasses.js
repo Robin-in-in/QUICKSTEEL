@@ -5,11 +5,10 @@ canvas.height = 576
 const c = canvas.getContext('2d')
 
 //List all audio files here, played within draw loop 
-const parry1 = new Audio("../assets/sounds/fox_parry_1.mp3")
-const parry2 = new Audio("../assets/sounds/fox_parry_2.mp3")
-const parry3 = new Audio("../assets/sounds/fox_parry_3.mp3")
+let parry = new Audio("../assets/sounds/fox_parry_1.mp3")
 let slash = new Audio("../assets/sounds/fox_slash_1.mp3")
 let set = new Audio("../assets/sounds/fox_set_1.mp3")
+let dying = new Audio("../assets/sounds/isDying_fox.mp3")
 const backgroundWind = new Audio("../assets/sounds/backgroundWind.mp3")
 backgroundWind.loop = true
 backgroundWind.play()
@@ -91,8 +90,7 @@ class SwordFighterUI{
 
     this.position = {x:0, y:0}
 
-
-    this.camera = new Camera(mapWidth, mapHeight, this)
+    this.initCamera(mapWidth,mapHeight)
 
     //Player attributes
     this.facing = 'S'
@@ -122,7 +120,11 @@ class SwordFighterUI{
     
     }
 
-    refreshAttributes(width,height,fighterID,position, facing, isRunning, isSetting, isParrying, strikeRecency, speedDebuff, serverPointPosition){
+    initCamera(mapWidth, mapHeight) {
+        this.camera = new Camera(mapWidth, mapHeight, this)
+    }
+
+    refreshAttributes(width,height,fighterID,position, facing, isRunning, isSetting, isParrying, strikeRecency, speedDebuff, serverPointPosition, successfullyParried, isClashing, isDying, isRespawning){
         if(this.fighterID == fighterID){
             this.facing = facing
             this.isRunning = isRunning
@@ -134,27 +136,34 @@ class SwordFighterUI{
             this.width=width
             this.height=height
             this.position = position
-            if(!this.point && serverPointPosition!=-1){
-                this.point = new StrikeCircleUI(serverPointPosition, this)            
-            } else if (this.point && serverPointPosition==-1){
-                this.point = null
-            } else {
-                this.point.refresh(serverPointPosition)
-            }
+            this.successfullyParried = successfullyParried
+            this.isClashing = isClashing
+            this.isDying = isDying
+            this.isRespawning = isRespawning
+            if(this.constructor === SwordFighterUI){
+                if(!this.point && serverPointPosition){
+                    //console.log("Server Point Position", serverPointPosition)
+                    this.point = new StrikeCircleUI(serverPointPosition, this)            
+                } else if (this.point && !serverPointPosition){
+                    this.point = null
+                } else {
+                    this.point.refresh(serverPointPosition)
+                }
+            }   
         }     
     }
 
-    //Turn this from a method into a socket on recieve event
-    //Will need camera, strikeRecency, id  preStrikeCamX, preStrikeCamY (<-I can get those two natively from client I think?)
     draw() {
-        //FIRST Draw the strike trace if there should be one. Do this first so that anything else is drawn over it
-        this.camera.background.draw({position:{x:this.camera.position.x, y:this.camera.position.y}})
+        //If this is the player's character draw the background. This check is in place to make sure the enemy player doesn't draw the background as well.
+        if(this.constructor === SwordFighterUI){
+            this.camera.background.draw({position:{x:this.camera.position.x, y:this.camera.position.y}})
+        }    
         
+        //DEBUGGING STATE
+        console.log("Succesful Parry:",this.successfullyParried)
+        //console.log("Dying", this.isDying)
+        //console.log("Respawning", this.isRespawning)
 
-
-        /*This is really not my favourite way to do this, but it's the only way I can think of right now. postStrikeCamX and postStrikeCamY should only be updated once per strike, 
-         I don't know if frame skipping might have a chance to break this though. I'm leaving a bit of margin of error to update between 1.1 ad 0.9, so that it doesn't break if it's not exactly 1.0
-         This should theoretically prevent the strike trace from going scitzo on most setups, but it's a possibility for sure.*/
         if(this.strikeRecency==0.9){
             this.postStrike.cam.x = this.camera.position.x
             this.postStrike.player.x = this.position.x + this.camera.position.x
@@ -177,6 +186,8 @@ class SwordFighterUI{
             this.drawStrike()
         }
         else if(this.strikeRecency<=0){
+            //console.log("Type using method:", this.constructor)
+            //console.log ("CAMERA VAL", this.camera)
             this.preStrike.cam.x = this.camera.position.x
             this.preStrike.player.x = this.position.x + this.camera.position.x
             this.preStrike.cam.y = this.camera.position.y
@@ -189,33 +200,45 @@ class SwordFighterUI{
             this.imageFox.src="../assets/images/StrikeFoxSanim.png"
             this.animateSwordFighter(4,12,0,this.animationScale)
         } else{
-            if(this.isParrying){
+            if(this.successfullyParried){
                 if(this.playerNumber>1){
-                    this.imageFox.src="../assets/image/ParryFoxFull_blue.png"
+                    this.imageFox.src="../assets/images/ParryFoxFull_blue.png"
                 } else{
                     this.imageFox.src="../assets/images/ParryFoxFull.png"
                 }
                 this.animateSwordFighter(4,16,0,this.animationScale)
                 set.pause();
                 set.currentTime = 0;
-                parry1.pause();
-                parry1.currentTime = 0;
-                parry2.pause();
-                parry2.currentTime = 0;
-                parry3.pause();
-                parry3.currentTime = 0;
-
-                
-                let randomOutcome = Math.floor(Math.random()*3)
-                if(randomOutcome==0){
-                    parry1.play()
-                } else if(randomOutcome==1){
-                    parry2.play()
-                } else if(randomOutcome==2){
-                    parry3.play()
+                if(parry.paused){
+                    parry.currentTime = 0;
+                    let randomOutcome = Math.floor(Math.random()*3)
+                    if(randomOutcome==0){
+                        parry.src="../assets/sounds/fox_parry_1.mp3"
+                        parry.play()
+                    } else if(randomOutcome==1){
+                        parry.src="../assets/sounds/fox_parry_2.mp3"
+                        parry.play()
+                    } else if(randomOutcome==2){
+                        parry.src="../assets/sounds/fox_parry_3.mp3"
+                        parry.play()
+                    }
+                }   
+            } else if(this.isDying){
+                if(this.playerNumber==1){
+                    this.imageFox.src="../assets/images/isDying_2.png"
+                }else{
+                    this.imageFox.src="../assets/images/isDying_2_blue.png"
                 }
-            }
-            else if(this.isSetting){
+                this.animateSwordFighter(3,36,30,this.animationScale)
+                if(dying.paused && dying.currentTime==0){
+                    dying.play()
+                }
+            } else if(this.isRespawning){
+                dying.currentTime=0
+            }else if(this.isParrying){
+                this.imageFox.src="../assets/images/parryrednew.png"
+                this.animateSwordFighter(2,16,0,this.animationScale)
+            } else if(this.isSetting){
                 if(this.playerNumber>1){
                     this.imageFox.src="../assets/images/IsSetting_blue.png"
                 } else{
@@ -335,7 +358,7 @@ class SwordFighterUI{
         c.strokeStyle = 'rgba(216, 229, 234, '+this.strikeRecency+')';
         c.lineWidth = 20;                           
         c.lineCap = 'square';
-        
+
         //This is the strike trace. If you need to understand this and are confused, ask me to relearn it quickly and ill explain it on discord                      
         c.beginPath();           
         c.moveTo(this.preStrike.player.x+(this.camera.position.x-this.postStrike.cam.x)+(this.postStrike.cam.x-this.preStrike.cam.x)+((this.width/2)*this.animationScale), this.preStrike.player.y+(this.camera.position.y-this.postStrike.cam.y)+(this.postStrike.cam.y-this.preStrike.cam.y)+((this.width/2)*this.animationScale));      
@@ -410,6 +433,27 @@ class SwordFighterUI{
     }
 }
 
+class EnemySwordFighterUI extends SwordFighterUI{
+    constructor(width,height,fighterID, playerScaling, playerNumber, mainFighter){
+        //Player Animation
+        super(width, height, fighterID, null, null, playerScaling, playerNumber)
+        this.mainFighterRef = mainFighter
+        this.initToMainCamera()     
+    }
+
+    initToMainCamera(){
+        this.initCamera()
+    }
+
+    initCamera(){
+        this.camera = this.mainFighterRef ? this.mainFighterRef.camera : null
+    }
+
+    drawCloud(){
+        return
+    }
+}
+
 class StrikeCircleUI {
     constructor(screenPosition, player){
         //Play random set sound
@@ -421,13 +465,22 @@ class StrikeCircleUI {
         this.scaling=1.2
         this.radius = 175
         this.screenPosition = screenPosition
-
-        this.initialCamX = this.fighter.camera.position.x
-        this.initialCamY = this.fighter.camera.position.y
+        //console.log("Type using method in constructor:", this.fighter.constructor)
+        //console.log("SCREEN POSITION IN CONSTRUCTOR", this.screenPosition)
+        if(this.fighter.constructor === SwordFighterUI){
+            this.initialCamX = this.fighter.camera.position.x
+            this.initialCamY = this.fighter.camera.position.y
+        } else {
+            this.initalCamX = 0
+            this.initialCamY = 0
+        }
+        
     }
 
     draw() {
         c.imageSmoothingEnabled=false;
+        //console.log("Type using method in draw:", this.fighter.constructor)
+        console.log("SCREEN POSITION IN DRAW", this.screenPosition)
         c.drawImage(this.strikeCircle,0,0,this.radius*2,this.radius*2,this.screenPosition.x-(this.initialCamX-this.fighter.camera.position.x)-this.scaling*this.radius,this.screenPosition.y-(this.initialCamY-this.fighter.camera.position.y)-this.scaling*this.radius,this.radius*2*this.scaling,this.radius*2*this.scaling)    }
 
     refresh(serverStrikeCirclePosition){

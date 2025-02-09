@@ -2,6 +2,7 @@
 
 const socket = io('http://localhost:3001');
 let player = null
+let enemy = null
 
 /*
 const position = {x:0,y:0}
@@ -159,12 +160,27 @@ socket.on('initial', (mapWidth, mapHeight, playerWidth, playerHeight, fighterID,
     player = new SwordFighterUI(playerWidth, playerHeight, fighterID, mapWidth, mapHeight, playerScaling, playerNumber)
 });
 
-socket.on('update', (playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry, strikeRecency, speedDebuff, serverPointPosition) => {
+socket.on('update', (playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry, strikeRecency, speedDebuff, serverPointPosition, playerScaling, successfullyParried, isClashing, isDying, isRespawning) => {
     //Server will send updates to the client, this is where we update the client based on the server's dapositiposition
-    //console.log("POINT POSITION X ON UPDATE",serverPointPosition)
     //TODO: Will have to figure out a way to give unique ID's to each player- shouldn't be hard, only 1v1 for now
-    player.refreshAttributes(playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry.isParrying, strikeRecency, speedDebuff, serverPointPosition)
-    
+    ///console.log("serverPointPosition in update block", serverPointPosition)
+    console.log("successfullyParried in update block", successfullyParried)
+    player.refreshAttributes(playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry.isParrying, strikeRecency, speedDebuff, serverPointPosition, successfullyParried, isClashing, isDying, isRespawning)
+})
+
+socket.on('updateToOthers', (playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry, strikeRecency, speedDebuff, serverPointPosition, playerScaling, playerNumber, successfullyParried, isClashing, isDying, isRespawning) => {
+    //Updates recieved from other players. As there is only one other player right now I'm implementing it as such
+    if(!enemy&&!player){
+
+    }else if(!enemy&&player){
+        enemy = new EnemySwordFighterUI(playerWidth, playerHeight, fighterID, playerScaling, playerNumber, player)
+    } else{
+        enemy.refreshAttributes(playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry.isParrying, strikeRecency, speedDebuff, serverPointPosition, successfullyParried, isClashing, isDying, isRespawning)
+    }
+})
+
+socket.on('disconnectToOthers', () => {
+    enemy = null
 })
 
 let lastTime = 0;
@@ -198,11 +214,17 @@ function animate(timestamp){
                 player.point.draw();
             }
         } 
+        if(enemy){
+            enemy.draw()
+            if(enemy.point){
+                enemy.point.draw()
+            }
+        }
     }
     window.requestAnimationFrame(animate);
 }
 
-
+http://localhost:3001/
 animate()
 
 

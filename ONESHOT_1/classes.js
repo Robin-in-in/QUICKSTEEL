@@ -8,24 +8,52 @@ class StrikePoint{
         
         this.fighter=ownerFighter
         this.radius=175
+        this.strikeStart = {x:0,y:0}
+        this.strikeEnd = {x:0,y:0}
     }
 
     //Update owner fighter's position to center of strike point
-    strike() {
+    strike(enemyPosition) {
+        this.strikeStart.x = this.fighter.position.x
+        this.strikeStart.y = this.fighter.position.y
         this.fighter.position.x = this.truePosX-(this.fighter.width*this.fighter.animationScale/2)
         this.fighter.position.y = this.truePosY-(this.fighter.height*this.fighter.animationScale/2)
+        this.strikeEnd.x = this.fighter.position.x
+        this.strikeEnd.y = this.fighter.position.y
+        //console.log("Strike Start:", this.strikeStart)
+        //console.log("Strike End:", this.strikeEnd)
+        //console.log("Enemy Postiion:", enemyPosition)
+        if(enemyPosition){
+            if(this.pointLineCollision(enemyPosition.x,enemyPosition.y, this.strikeStart.x, this.strikeStart.y, this.strikeEnd.x, this.strikeEnd.y)){
+                this.fighter.enemyStruck=true
+                console.log("Enemy struck")
+            }
+        }
+    }
+
+    pointLineCollision(px, py, x1, y1, x2, y2, threshold = 40) {
+        // Compute the distance using the formula
+
+        let numerator = Math.abs((y2 - y1) * px - (x2 - x1) * py + x2 * y1 - y2 * x1);
+        let denominator = Math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2);
+        
+        let distance = numerator / denominator;
+        
+        // Check if within threshold
+        return distance <= threshold;
     }
 }
 
 
 
 class SwordFighter{
-    constructor({fighterID}) {
+    constructor({fighterID, playerNumber}) {
         //TODO: Player animation and opacity stuff needs to be moved to some frontend swordfighter thing
         //I think some opacity stuff is directly related to game logic so need to figure that out
         //Need to move calculation of position velocity to this version of swordfighter, only need facing and input key list from client
         this.self=this
         this.fighterID = fighterID
+        this.playerNumber = playerNumber
 
         this.position = {x:0,y:0}
         this.velocity = {x:0,y:0}
@@ -51,6 +79,13 @@ class SwordFighter{
         //Strike Attributes
         this.strikeRecency = 0
         this.strikeLag = 0.7
+
+        this.successfullyStruck = false
+        this.successfullyParried= false
+        this.isDying=false
+        this.isClashing=false
+        this.isRespawning=false
+        this.enemyStruck=false
 
         this.inputData = {
             keys : {
@@ -78,18 +113,59 @@ class SwordFighter{
         this.previousFacing
     }
 
-    refreshAttributes(){
-
+    enemyStrikeSuccessfullySignaled(){
+        this.enemyStruck=false
     }
 
-    update() {
+    update(enemyPosition) {
         this.updateVelocity()
 
+        //DEBUGGING BLOCK PLAYER 1 STATES
+        /*
+        if(this.playerNumber==1){
+            console.log("Dying:", this.isDying)
+            console.log("Respawning, this.isRespawning")
+        }
+            */
+        //PLAYER STATE CHECKS
+        //ignores succesfullyStruck if any of these are met. I don't think this check order causes any bugs (none of the first conditions should coexist) but this would be a place to look if weird behaviour happens
+        if(this.successfullyParried){
+            this.velocity={x:0,y:0}
+            this.facing='S'
+            //succesful parry logic
+        } else if(this.isClashing){
+            this.velocity={x:0,y:0}
+            this.successfullyStruck=false
+        } else if(this.isDying){
+            this.velocity={x:0,y:0}
+            this.successfullyStruck=false
+            //console.log("DYING PLAYER:", this.playerNumber)
+        } else if(this.isRespawning){
+            this.position={x:100,y:100}
+            this.respawn()
+        }else if(this.successfullyStruck){
+            console.log("SuccesfullyStruck block entered. Is he parying?", this.parry.isParrying)
+            if(this.isRespawning){
+                console.log("respawning block entered")
+                this.successfullyStruck=false
+            } else if(this.parry.isParrying){
+                console.log("succesfulyParry block entered")
+                this.successfulParry()
+            } else if(this.strikeRecency>0.6){
+                this.clash()
+            }else{
+                this.die()
+            }
+        }
+
+        
+        //Count down strikeRecency, used for determining behaviour right after a strike
         if(this.strikeRecency>0){
             this.strikeRecency-=0.1
         }
         
-        //Set velocity to 0 if player would be passed boundary on next frame, or if the player is in lag for something
+        //Set velocity to 0 if player would be passed boundary on next frame
+        //Update velocity/speedDebuff if the player is supposed to be in lag for something
         if(this.position.y + this.height*this.animationScale+this.velocity.y >= this.mapHeight||(this.position.y+this.velocity.y<= 0)){
             this.velocity.y=0
         }
@@ -108,12 +184,11 @@ class SwordFighter{
             }
         }
 
-        //add velocity to the position
+        //All velocity calculations complete, add to position
         this.position.y += this.velocity.y
         this.position.x += this.velocity.x
 
         //Update "Facing" direction and running tag based on velocity.
-        //Will need to update this if there's an action other than running that gives velocity
         if(this.velocity.x>0&&this.velocity.y==0){
             this.facing='E'
             this.isRunning=true
@@ -156,8 +231,8 @@ class SwordFighter{
             if(this.detectCircleFighterCollision(this.point.truePosX,this.point.truePosY,this.point.radius, this)&&!this.isSetting){
 
 
-                console.log("IN CIRCLE", true)
-                this.point.strike()
+                //console.log("IN CIRCLE", true)
+                this.point.strike(enemyPosition)
                 this.point = null
                 this.strikeRecency = 1.1;
                 this.animCount=0
@@ -221,33 +296,69 @@ class SwordFighter{
     setStrikePoint(strikeData, cameraPos) {
         //Make sure he isin't already setting, so you can't cancel one set with another.
         //The animation isin't very long to begin with but it's just a small delay so you can't instantly readjust
-        if(!this.isSetting&&!this.parry.isParrying){
+        if(!this.isSetting&&!this.parry.isParrying&&!this.isDying&&!this.successfullyParried){
             this.isSetting = true
 
             
             //the "-7s" here are to offset the top corner of the screen, which is just occupied by whitespace. I might need to actually deal with this in HTML/CSS later, make the game fullscreen offrip or something, since that white space may or may not be different            this.point = new StrikePoint({position: {x: mouseX -7, y: mouseY-7},ownerFighter:this.self})
             this.point = new StrikePoint({position: {x: strikeData.mouse.x, y: strikeData.mouse.y},ownerFighter:this.self,cameraPos:cameraPos})
             //This is the delay, 0.5 seconds before the tag (this.isSetting) becomes false
-            console.log("B. Set point with following data:", this.point)
+            //console.log("B. Set point with following data:", this.point)
             setTimeout(()=>{
                 this.isSetting=false
             }, 500)
         }
     }
 
-    parry() {
+    beginParrying() {
         //If the player is in a strike recency, they can't parry
-        if(!this.isSetting&&!this.recentParry){
+        if(!this.isSetting&&!this.recentParry&&!this.isDying&&!this.successfullyParried){
             this.parry.isParrying = true
             this.parry.recentParry = true;
+            console.log("Parrying Player", this.playerNumber)
             //logic for parrying
             setTimeout(()=>{
                 this.parry.isParrying=false
-            }, 250)
+                console.log("Parry complete")
+            }, 1500)
             setTimeout(()=>{
+                console.log("Recent parry elapsed")
                 this.parry.recentParry=false
             }, 2000)
         }
+    }
+
+    successfulParry(){
+        console.log("Successfully Parried!", this.playerNumber)
+        this.successfullyParried=true
+        this.successfullyStruck=false
+        setTimeout(()=>{
+            this.successfullyParried=false
+            
+        },1000)
+    }
+    die(){
+        console.log("Killing player " + this.playerNumber)
+        this.isDying=true
+        this.successfullyStruck=false
+        setTimeout(()=>{
+            this.isDying=false
+            this.isRespawning=true
+        },4000)
+    }
+    clash(){
+        this.isClashing=true
+        this.successfullyStruck=false
+        setTimeout(()=>{
+            this.isClashing=false
+        }, 250)
+    }
+    respawn(){
+        //console.log("Respawning player...")
+        setTimeout(()=>{
+            //console.log("Player " + this.playerNumber + " respawned")
+            this.isRespawning=false
+        },1000)
     }
 
     detectCircleFighterCollision(circleCenterX, circleCenterY, circleRadius, fighter) {
@@ -272,5 +383,7 @@ class SwordFighter{
         return (distanceX ** 2 + distanceY ** 2) <= (radius ** 2)
     }
 }
+
+
 
 module.exports = {SwordFighter, StrikePoint}

@@ -19,20 +19,43 @@ app.get('/', (req, res) => {
 });
 
 io.on('connection', (socket) => {
+    let playerNumber = 0 
+    if(fighters.size==0){
+        playerNumber=1
+    } else if(fighters.values().next().value.playerNumber==1){
+        playerNumber=2
+    } else{
+        playerNumber=1
+    }
     console.log('New connection:', socket.id)
-    const fighter = new SwordFighter({fighterID: socket.id})
+    const fighter = new SwordFighter({fighterID: socket.id, playerNumber: playerNumber})
     fighters.set(socket.id, fighter)
-    socket.emit('initial',fighter.mapWidth, fighter.mapHeight, fighter.width, fighter.height, socket.id, fighter.animationScale, fighters.size)
+    socket.emit('initial',fighter.mapWidth, fighter.mapHeight, fighter.width, fighter.height, socket.id, fighter.animationScale, fighter.playerNumber)
 
     const updatesPerSecond = 60
     const updateLoop = setInterval(() => {
-        let pointPosition=-1
+        let enemyRef = null
+        let enemyPosition = null
+
         
-        fighter.update()
-        if(fighter.point!=null){
-            pointPosition=fighter.point.position
+        //Could replace this with a more efficient solution since fighters.size is 2 max
+        for(let f of fighters.values()){
+            if(f.fighterID != socket.id){
+                enemyRef = f
+                enemyPosition = f.position
+                break
+            }
         }
-        socket.emit('update', fighter.width, fighter.height, socket.id, fighter.position, fighter.facing, fighter.isRunning, fighter.isSetting, fighter.parry, fighter.strikeRecency, fighter.speedDebuff, pointPosition)
+        
+        fighter.update(enemyPosition)
+        if(fighter.enemyStruck){
+            if(enemyRef){
+                enemyRef.successfullyStruck=true
+                fighter.enemyStrikeSuccessfullySignaled()
+            }
+        }
+        socket.emit('update', fighter.width, fighter.height, socket.id, fighter.position, fighter.facing, fighter.isRunning, fighter.isSetting, fighter.parry, fighter.strikeRecency, fighter.speedDebuff, fighter.point?.position, fighter.animationScale, fighter.successfullyParried, fighter.isClashing, fighter.isDying, fighter.isRespawning )
+        socket.broadcast.emit('updateToOthers',fighter.width, fighter.height, socket.id, fighter.position, fighter.facing, fighter.isRunning, fighter.isSetting, fighter.parry, fighter.strikeRecency, fighter.speedDebuff, fighter.point?.position, fighter.animationScale, fighter.playerNumber, fighter.successfullyParried, fighter.isClashing, fighter.isDying, fighter.isRespawning  )
     }, 1000/updatesPerSecond)
 
     socket.on('inputs', (inputData) => {
@@ -47,7 +70,6 @@ io.on('connection', (socket) => {
 
     socket.on('strike',(strikeData,cameraPos) => {
         if (strikeData && strikeData.mouse.x && cameraPos) {
-            console.log("A. Setting strike point w/ following data:", strikeData)
             fighter.setStrikePoint(strikeData,cameraPos)
         } else {
             console.warn('Received invalid strikeData or cameraPos:', strikeData);
@@ -57,12 +79,12 @@ io.on('connection', (socket) => {
     })
 
     socket.on('parry',()=>{
-        fighter.parry()
+        fighter.beginParrying()
     })
 
     socket.on('disconnect', ()=> {
         console.log('A fighter has disconnected:', socket.id)
-
+        socket.broadcast.emit('disconnectToOthers')
         clearInterval(updateLoop)
         fighters.delete(socket.id)
     })

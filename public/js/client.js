@@ -11,7 +11,7 @@ let enemy = null
 
 /*
 const position = {x:0,y:0}
-const facing = 'S'
+const facing = 'S'w
 const isRunning = false
 const isSetting = false
 const isParrying = false

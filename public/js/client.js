@@ -229,7 +229,6 @@ function animate(timestamp){
     window.requestAnimationFrame(animate);
 }
 
-http://localhost:3001/
 animate()
 
 

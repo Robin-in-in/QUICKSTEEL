@@ -1,5 +1,5 @@
 //MADE IN COLLABORATION WITH TYSON LINE - type out README.MD
-const socket = io(`https://${window.location.hostname}`);
+const socket = io('https://${window.location.hostname}');
 /*
 const socket = io({
     transports: ["websocket", "polling"]

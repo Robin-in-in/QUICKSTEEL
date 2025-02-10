@@ -330,7 +330,7 @@ class SwordFighter{
             setTimeout(()=>{
                 this.parry.isParrying=false
                 console.log("Parry complete")
-            }, 1000)
+            }, 250)
             setTimeout(()=>{
                 console.log("Recent parry elapsed")
                 this.parry.recentParry=false

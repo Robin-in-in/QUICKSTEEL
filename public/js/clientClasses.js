@@ -248,7 +248,7 @@ class SwordFighterUI{
                 dying.currentTime=0
             }else if(this.isParrying){
                 this.imageFox.src="../assets/images/parryrednew.png"
-                this.animateSwordFighter(2,16,0,this.animationScale)
+                this.animateSwordFighter(2,16,15,this.animationScale)
             } else if(this.isSetting){
                 if(this.playerNumber>1){
                     this.imageFox.src="../assets/images/IsSetting_blue.png"

@@ -1,6 +1,6 @@
 //MADE IN COLLABORATION WITH TYSON LINE - type out README.MD
 
-const socket = io('http://localhost:3001');
+const socket = io('http://localhost:3000');
 let player = null
 let enemy = null
 
@@ -160,22 +160,22 @@ socket.on('initial', (mapWidth, mapHeight, playerWidth, playerHeight, fighterID,
     player = new SwordFighterUI(playerWidth, playerHeight, fighterID, mapWidth, mapHeight, playerScaling, playerNumber)
 });
 
-socket.on('update', (playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry, strikeRecency, speedDebuff, serverPointPosition, playerScaling, successfullyParried, isClashing, isDying, isRespawning) => {
+socket.on('update', (playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry, strikeRecency, speedDebuff, serverPointPosition, playerScaling, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry) => {
     //Server will send updates to the client, this is where we update the client based on the server's dapositiposition
     //TODO: Will have to figure out a way to give unique ID's to each player- shouldn't be hard, only 1v1 for now
     ///console.log("serverPointPosition in update block", serverPointPosition)
     console.log("successfullyParried in update block", successfullyParried)
-    player.refreshAttributes(playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry.isParrying, strikeRecency, speedDebuff, serverPointPosition, successfullyParried, isClashing, isDying, isRespawning)
+    player.refreshAttributes(playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry.isParrying, strikeRecency, speedDebuff, serverPointPosition, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry)
 })
 
-socket.on('updateToOthers', (playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry, strikeRecency, speedDebuff, serverPointPosition, playerScaling, playerNumber, successfullyParried, isClashing, isDying, isRespawning) => {
+socket.on('updateToOthers', (playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry, strikeRecency, speedDebuff, serverPointPosition, playerScaling, playerNumber, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry) => {
     //Updates recieved from other players. As there is only one other player right now I'm implementing it as such
     if(!enemy&&!player){
 
     }else if(!enemy&&player){
         enemy = new EnemySwordFighterUI(playerWidth, playerHeight, fighterID, playerScaling, playerNumber, player)
     } else{
-        enemy.refreshAttributes(playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry.isParrying, strikeRecency, speedDebuff, serverPointPosition, successfullyParried, isClashing, isDying, isRespawning)
+        enemy.refreshAttributes(playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry.isParrying, strikeRecency, speedDebuff, serverPointPosition, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry)
     }
 })
 

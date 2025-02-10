@@ -115,6 +115,13 @@ class SwordFighterUI{
     this.postStrike = {cam: {x:0,y:0},player:{x:0,y:0}}
     this.currentStrikeOpacity = 0;
 
+    //States
+    this.successfullyParried = false
+    this.isClashing = false
+    this.isDying = false
+    this.isRespawning = false
+    this.struckEnemyParry = false
+
     this.fighterID = fighterID
     this.point = null
     
@@ -124,7 +131,7 @@ class SwordFighterUI{
         this.camera = new Camera(mapWidth, mapHeight, this)
     }
 
-    refreshAttributes(width,height,fighterID,position, facing, isRunning, isSetting, isParrying, strikeRecency, speedDebuff, serverPointPosition, successfullyParried, isClashing, isDying, isRespawning){
+    refreshAttributes(width,height,fighterID,position, facing, isRunning, isSetting, isParrying, strikeRecency, speedDebuff, serverPointPosition, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry){
         if(this.fighterID == fighterID){
             this.facing = facing
             this.isRunning = isRunning
@@ -140,6 +147,7 @@ class SwordFighterUI{
             this.isClashing = isClashing
             this.isDying = isDying
             this.isRespawning = isRespawning
+            this.struckEnemyParry = struckEnemyParry
             if(this.constructor === SwordFighterUI){
                 if(!this.point && serverPointPosition){
                     //console.log("Server Point Position", serverPointPosition)
@@ -196,7 +204,10 @@ class SwordFighterUI{
 
         //SECOND These are all the animations related to the actual player, seperated for clarity
         //Hierarchy: Striking > Setting > Running > Idle
-        if(this.strikeRecency>0){
+        if(this.struckEnemyParry){
+            this.imageFox.src="../assets/images/StrikeFoxSanim.png"
+            this.animateSwordFighter(21,63,62,this.animationScale)
+        } else if(this.strikeRecency>0){
             this.imageFox.src="../assets/images/StrikeFoxSanim.png"
             this.animateSwordFighter(4,12,0,this.animationScale)
         } else{
@@ -206,7 +217,7 @@ class SwordFighterUI{
                 } else{
                     this.imageFox.src="../assets/images/ParryFoxFull.png"
                 }
-                this.animateSwordFighter(4,16,0,this.animationScale)
+                this.animateSwordFighter(15,60,59,this.animationScale)
                 set.pause();
                 set.currentTime = 0;
                 if(parry.paused){

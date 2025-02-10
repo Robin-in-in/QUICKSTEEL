@@ -86,6 +86,7 @@ class SwordFighter{
         this.isClashing=false
         this.isRespawning=false
         this.enemyStruck=false
+        this.struckEnemyParry=false
 
         this.inputData = {
             keys : {
@@ -113,8 +114,14 @@ class SwordFighter{
         this.previousFacing
     }
 
-    enemyStrikeSuccessfullySignaled(){
+    enemyStrikeSuccessfullySignaled(enemyParrying){
         this.enemyStruck=false
+        if(enemyParrying){
+            this.struckEnemyParry = true
+        }
+        setTimeout(()=>{
+            this.struckEnemyParry=false
+        }, 1000)
     }
 
     update(enemyPosition) {
@@ -166,6 +173,9 @@ class SwordFighter{
         
         //Set velocity to 0 if player would be passed boundary on next frame
         //Update velocity/speedDebuff if the player is supposed to be in lag for something
+        if(this.struckEnemyParry){
+            this.velocity = {x:0,y:0}
+        }
         if(this.position.y + this.height*this.animationScale+this.velocity.y >= this.mapHeight||(this.position.y+this.velocity.y<= 0)){
             this.velocity.y=0
         }
@@ -296,7 +306,7 @@ class SwordFighter{
     setStrikePoint(strikeData, cameraPos) {
         //Make sure he isin't already setting, so you can't cancel one set with another.
         //The animation isin't very long to begin with but it's just a small delay so you can't instantly readjust
-        if(!this.isSetting&&!this.parry.isParrying&&!this.isDying&&!this.successfullyParried){
+        if(!this.isSetting&&!this.parry.isParrying&&!this.isDying&&!this.successfullyParried&&!this.struckEnemyParry){
             this.isSetting = true
 
             
@@ -320,7 +330,7 @@ class SwordFighter{
             setTimeout(()=>{
                 this.parry.isParrying=false
                 console.log("Parry complete")
-            }, 1500)
+            }, 1000)
             setTimeout(()=>{
                 console.log("Recent parry elapsed")
                 this.parry.recentParry=false
@@ -355,6 +365,12 @@ class SwordFighter{
     }
     respawn(){
         //console.log("Respawning player...")
+        /* I want to say these cause no issues... but I really don't know. Should test
+        this.isClashing = false
+        this.isDying = false
+        this.isSetting = false
+        this.struckEnemyParry = false
+        */
         setTimeout(()=>{
             //console.log("Player " + this.playerNumber + " respawned")
             this.isRespawning=false

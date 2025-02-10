@@ -1,6 +1,7 @@
 {
   "name": "oneshot",
   "version": "0.0.1",
+  "main": "server.js",
   "description": "my first fighting game",
   "type": "commonjs",
   "dependencies": {

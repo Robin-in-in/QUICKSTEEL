@@ -1,13 +1,14 @@
 const express = require('express');
 const {SwordFighter, StrikePoint} = require('./classes');
 const app = express();
-const port = 3001;
 
 const { createServer } = require('node:http');
 const { join } = require('node:path');
 const server = createServer(app);
 const { Server } = require('socket.io');
 const io = new Server(server);
+
+const PORT = process.env.PORT || 3000;
 
 const fighters = new Map()
 
@@ -51,11 +52,12 @@ io.on('connection', (socket) => {
         if(fighter.enemyStruck){
             if(enemyRef){
                 enemyRef.successfullyStruck=true
-                fighter.enemyStrikeSuccessfullySignaled()
+                let enemyParrying=enemyRef.parry.isParrying
+                fighter.enemyStrikeSuccessfullySignaled(enemyParrying)
             }
         }
-        socket.emit('update', fighter.width, fighter.height, socket.id, fighter.position, fighter.facing, fighter.isRunning, fighter.isSetting, fighter.parry, fighter.strikeRecency, fighter.speedDebuff, fighter.point?.position, fighter.animationScale, fighter.successfullyParried, fighter.isClashing, fighter.isDying, fighter.isRespawning )
-        socket.broadcast.emit('updateToOthers',fighter.width, fighter.height, socket.id, fighter.position, fighter.facing, fighter.isRunning, fighter.isSetting, fighter.parry, fighter.strikeRecency, fighter.speedDebuff, fighter.point?.position, fighter.animationScale, fighter.playerNumber, fighter.successfullyParried, fighter.isClashing, fighter.isDying, fighter.isRespawning  )
+        socket.emit('update', fighter.width, fighter.height, socket.id, fighter.position, fighter.facing, fighter.isRunning, fighter.isSetting, fighter.parry, fighter.strikeRecency, fighter.speedDebuff, fighter.point?.position, fighter.animationScale, fighter.successfullyParried, fighter.isClashing, fighter.isDying, fighter.isRespawning, fighter.struckEnemyParry )
+        socket.broadcast.emit('updateToOthers',fighter.width, fighter.height, socket.id, fighter.position, fighter.facing, fighter.isRunning, fighter.isSetting, fighter.parry, fighter.strikeRecency, fighter.speedDebuff, fighter.point?.position, fighter.animationScale, fighter.playerNumber, fighter.successfullyParried, fighter.isClashing, fighter.isDying, fighter.isRespawning, fighter.struckEnemyParry  )
     }, 1000/updatesPerSecond)
 
     socket.on('inputs', (inputData) => {
@@ -91,7 +93,7 @@ io.on('connection', (socket) => {
 
 });
 
-server.listen(port, () => {
-    console.log('Server is running at http://localhost:' + port);
+server.listen(PORT, () => {
+    console.log('Server is running at http://localhost:' + PORT);
 });
 

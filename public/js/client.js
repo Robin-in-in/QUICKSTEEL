@@ -1,5 +1,5 @@
 //MADE IN COLLABORATION WITH TYSON LINE - type out README.MD
-const socket = io('https://${window.location.hostname}');
+const socket = io(`https://${window.location.hostname}`);
 /*
 const socket = io({
     transports: ["websocket", "polling"]
@@ -11,7 +11,7 @@ let enemy = null
 
 /*
 const position = {x:0,y:0}
-const facing = 'S'w
+const facing = 'S'
 const isRunning = false
 const isSetting = false
 const isParrying = false

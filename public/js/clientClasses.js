@@ -11,7 +11,6 @@ let set = new Audio("../assets/sounds/fox_set_1.mp3")
 let dying = new Audio("../assets/sounds/isDying_fox.mp3")
 const backgroundWind = new Audio("../assets/sounds/backgroundWind.mp3")
 backgroundWind.loop = true
-backgroundWind.play()
 
 class Camera {
     //TODO: Should all be calculated in backend and return the updated positions in emit to sender 
@@ -38,7 +37,9 @@ class Camera {
     }
   
     update() {
-
+        if(backgroundWind.paused){
+            backgroundWind.play()
+        }
         
 
       let targetX = -(this.fighter.position.x - (canvas.width / 2));

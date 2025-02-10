@@ -1,6 +1,11 @@
 //MADE IN COLLABORATION WITH TYSON LINE - type out README.MD
-
-const socket = io('http://localhost:3000');
+const socket = io(`https://${window.location.hostname}`);
+/*
+const socket = io({
+    transports: ["websocket", "polling"]
+  });
+  */
+//const socket = io('http://localhost:3000');
 let player = null
 let enemy = null
 

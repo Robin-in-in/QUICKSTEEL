@@ -242,11 +242,16 @@ class SwordFighterUI{
                     this.imageFox.src="../assets/images/isDying_2_blue.png"
                 }
                 this.animateSwordFighter(3,36,30,this.animationScale)
+                console.log("is dying paused?", dying.paused)
+                console.log("what's dying's currentTime?", dying.currentTime)
                 if(dying.paused && dying.currentTime==0){
                     dying.play()
                 }
             } else if(this.isRespawning){
+                dying.pause()
                 dying.currentTime=0
+                console.log("(after respawning) is dying paused?", dying.paused)
+                console.log("(after respawning) what's dying's currentTime?", dying.currentTime)
             }else if(this.isParrying){
                 this.imageFox.src="../assets/images/parryrednew.png"
                 this.animateSwordFighter(2,16,15,this.animationScale)

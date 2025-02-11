@@ -1,0 +1,7 @@
+Playtesting Quicksteel
+- Add indicator for enemy strikepoint
+- Make screen bigger so you have more informations
+	option2: make an edge of screen indicator for enemy player, if you think increasing canvas is too hard.
+
+- Make skin change on kill streak
+- Split the map into quadrants and respawn players on other side when they die

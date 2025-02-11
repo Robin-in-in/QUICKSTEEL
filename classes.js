@@ -26,21 +26,46 @@ class StrikePoint{
         if(enemyPosition){
             if(this.pointLineCollision(enemyPosition.x,enemyPosition.y, this.strikeStart.x, this.strikeStart.y, this.strikeEnd.x, this.strikeEnd.y)){
                 this.fighter.enemyStruck=true
-                console.log("Enemy struck")
+                //console.log("Enemy struck")
             }
         }
     }
 
-    pointLineCollision(px, py, x1, y1, x2, y2, threshold = 40) {
-        // Compute the distance using the formula
-
-        let numerator = Math.abs((y2 - y1) * px - (x2 - x1) * py + x2 * y1 - y2 * x1);
-        let denominator = Math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2);
-        
-        let distance = numerator / denominator;
-        
-        // Check if within threshold
-        return distance <= threshold;
+    pointLineCollision(px, py, x1, y1, x2, y2, threshold = 40, extensionFactor = 1.3) {
+        // Compute the original segment vector
+        let dx = x2 - x1;
+        let dy = y2 - y1;
+        let segmentLength = Math.hypot(dx, dy);
+    
+        if (segmentLength === 0) {
+            // The segment is actually just a point
+            return Math.hypot(px - x1, py - y1) <= threshold;
+        }
+    
+        // Normalize direction vector
+        let ux = dx / segmentLength;
+        let uy = dy / segmentLength;
+    
+        // Extend each endpoint
+        let extension = (extensionFactor - 1) * segmentLength;
+        x1 -= ux * extension;
+        y1 -= uy * extension;
+        x2 += ux * extension;
+        y2 += uy * extension;
+    
+        // Compute projection factor
+        let segmentLengthSq = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+        let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / segmentLengthSq;
+    
+        if (t < 0) {
+            return Math.hypot(px - x1, py - y1) <= threshold;
+        } else if (t > 1) {
+            return Math.hypot(px - x2, py - y2) <= threshold;
+        } else {
+            let closestX = x1 + t * (x2 - x1);
+            let closestY = y1 + t * (y2 - y1);
+            return Math.hypot(px - closestX, py - closestY) <= threshold;
+        }
     }
 }
 
@@ -130,8 +155,8 @@ class SwordFighter{
         //DEBUGGING BLOCK PLAYER 1 STATES
         /*
         if(this.playerNumber==1){
-            console.log("Dying:", this.isDying)
-            console.log("Respawning, this.isRespawning")
+            //console.log("Dying:", this.isDying)
+            //console.log("Respawning, this.isRespawning")
         }
             */
         //PLAYER STATE CHECKS
@@ -151,12 +176,12 @@ class SwordFighter{
             this.position={x:100,y:100}
             this.respawn()
         }else if(this.successfullyStruck){
-            console.log("SuccesfullyStruck block entered. Is he parying?", this.parry.isParrying)
+            //console.log("SuccesfullyStruck block entered. Is he parying?", this.parry.isParrying)
             if(this.isRespawning){
-                console.log("respawning block entered")
+                //console.log("respawning block entered")
                 this.successfullyStruck=false
             } else if(this.parry.isParrying){
-                console.log("succesfulyParry block entered")
+                //console.log("succesfulyParry block entered")
                 this.successfulParry()
             } else if(this.strikeRecency>0.6){
                 this.clash()
@@ -325,21 +350,21 @@ class SwordFighter{
         if(!this.isSetting&&!this.recentParry&&!this.isDying&&!this.successfullyParried){
             this.parry.isParrying = true
             this.parry.recentParry = true;
-            console.log("Parrying Player", this.playerNumber)
+            //console.log("Parrying Player", this.playerNumber)
             //logic for parrying
             setTimeout(()=>{
                 this.parry.isParrying=false
-                console.log("Parry complete")
+                //console.log("Parry complete")
             }, 900)
             setTimeout(()=>{
-                console.log("Recent parry elapsed")
+                //console.log("Recent parry elapsed")
                 this.parry.recentParry=false
             }, 2000)
         }
     }
 
     successfulParry(){
-        console.log("Successfully Parried!", this.playerNumber)
+        //console.log("Successfully Parried!", this.playerNumber)
         this.successfullyParried=true
         this.successfullyStruck=false
         setTimeout(()=>{
@@ -348,7 +373,7 @@ class SwordFighter{
         },1000)
     }
     die(){
-        console.log("Killing player " + this.playerNumber)
+        //console.log("Killing player " + this.playerNumber)
         this.isDying=true
         this.successfullyStruck=false
         setTimeout(()=>{

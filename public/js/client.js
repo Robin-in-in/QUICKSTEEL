@@ -165,11 +165,18 @@ socket.on('initial', (mapWidth, mapHeight, playerWidth, playerHeight, fighterID,
     player = new SwordFighterUI(playerWidth, playerHeight, fighterID, mapWidth, mapHeight, playerScaling, playerNumber)
 });
 
-socket.on('update', (playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry, strikeRecency, speedDebuff, serverPointPosition, playerScaling, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry) => {
-    //Server will send updates to the client, this is where we update the client based on the server's dapositiposition
-    //TODO: Will have to figure out a way to give unique ID's to each player- shouldn't be hard, only 1v1 for now
-    ///console.log("serverPointPosition in update block", serverPointPosition)
-    console.log("successfullyParried in update block", successfullyParried)
+socket.on('update', (playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry, strikeRecency, speedDebuff, serverPointPosition, playerScaling, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry, amountOfPlayers) => {
+    if(amountOfPlayers==1){
+        waitingMessage.style.display = "block";
+        overcrowdMessage.style.display = "none"; // Show the message
+    } else if(amountOfPlayers==2){
+        waitingMessage.style.display = "none";
+        overcrowdMessage.style.display = "none";
+    } else if(amountOfPlayers>2){
+        waitingMessage.style.display = "none";
+        overcrowdMessage.style.display = "block"; 
+    }
+
     player.refreshAttributes(playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry.isParrying, strikeRecency, speedDebuff, serverPointPosition, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry)
 })
 

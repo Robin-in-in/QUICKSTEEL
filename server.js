@@ -56,7 +56,7 @@ io.on('connection', (socket) => {
                 fighter.enemyStrikeSuccessfullySignaled(enemyParrying)
             }
         }
-        socket.emit('update', fighter.width, fighter.height, socket.id, fighter.position, fighter.facing, fighter.isRunning, fighter.isSetting, fighter.parry, fighter.strikeRecency, fighter.speedDebuff, fighter.point?.position, fighter.animationScale, fighter.successfullyParried, fighter.isClashing, fighter.isDying, fighter.isRespawning, fighter.struckEnemyParry )
+        socket.emit('update', fighter.width, fighter.height, socket.id, fighter.position, fighter.facing, fighter.isRunning, fighter.isSetting, fighter.parry, fighter.strikeRecency, fighter.speedDebuff, fighter.point?.position, fighter.animationScale, fighter.successfullyParried, fighter.isClashing, fighter.isDying, fighter.isRespawning, fighter.struckEnemyParry, fighters.size )
         socket.broadcast.emit('updateToOthers',fighter.width, fighter.height, socket.id, fighter.position, fighter.facing, fighter.isRunning, fighter.isSetting, fighter.parry, fighter.strikeRecency, fighter.speedDebuff, fighter.point?.position, fighter.animationScale, fighter.playerNumber, fighter.successfullyParried, fighter.isClashing, fighter.isDying, fighter.isRespawning, fighter.struckEnemyParry  )
     }, 1000/updatesPerSecond)
 
@@ -74,7 +74,7 @@ io.on('connection', (socket) => {
         if (strikeData && strikeData.mouse.x && cameraPos) {
             fighter.setStrikePoint(strikeData,cameraPos)
         } else {
-            console.warn('Received invalid strikeData or cameraPos:', strikeData);
+            console.warn('Received invalid strikeData or cameraPos. strikeData:', strikeData);
             console.warn('cameraPos:', cameraPos)
         }
         

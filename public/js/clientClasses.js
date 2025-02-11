@@ -133,6 +133,7 @@ class SwordFighterUI{
     }
 
     refreshAttributes(width,height,fighterID,position, facing, isRunning, isSetting, isParrying, strikeRecency, speedDebuff, serverPointPosition, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry){
+        console.log("position inside refresh attributes?",position)
         if(this.fighterID == fighterID){
             this.facing = facing
             this.isRunning = isRunning

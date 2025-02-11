@@ -31,7 +31,7 @@ class StrikePoint{
         }
     }
 
-    pointLineCollision(px, py, x1, y1, x2, y2, threshold = 40, extensionFactor = 1.3) {
+    pointLineCollision(px, py, x1, y1, x2, y2, threshold = 85, extensionFactor = 1.3) {
         // Compute the original segment vector
         let dx = x2 - x1;
         let dy = y2 - y1;

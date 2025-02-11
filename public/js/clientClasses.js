@@ -169,7 +169,7 @@ class SwordFighterUI{
         }    
         
         //DEBUGGING STATE
-        console.log("Succesful Parry:",this.successfullyParried)
+        //console.log("Succesful Parry:",this.successfullyParried)
         //console.log("Dying", this.isDying)
         //console.log("Respawning", this.isRespawning)
 
@@ -245,13 +245,13 @@ class SwordFighterUI{
                 console.log("is dying paused?", dying.paused)
                 console.log("what's dying's currentTime?", dying.currentTime)
                 if(dying.paused && dying.currentTime==0){
-                    dying.play()
+                    dying.play().catch(error => console.log("Playback error:", error));
                 }
             } else if(this.isRespawning){
                 dying.pause()
                 dying.currentTime=0
-                console.log("(after respawning) is dying paused?", dying.paused)
-                console.log("(after respawning) what's dying's currentTime?", dying.currentTime)
+                //console.log("(after respawning) is dying paused?", dying.paused)
+                //console.log("(after respawning) what's dying's currentTime?", dying.currentTime)
             }else if(this.isParrying){
                 this.imageFox.src="../assets/images/parryrednew.png"
                 this.animateSwordFighter(2,16,15,this.animationScale)
@@ -497,7 +497,7 @@ class StrikeCircleUI {
     draw() {
         c.imageSmoothingEnabled=false;
         //console.log("Type using method in draw:", this.fighter.constructor)
-        console.log("SCREEN POSITION IN DRAW", this.screenPosition)
+        //console.log("SCREEN POSITION IN DRAW", this.screenPosition)
         c.drawImage(this.strikeCircle,0,0,this.radius*2,this.radius*2,this.screenPosition.x-(this.initialCamX-this.fighter.camera.position.x)-this.scaling*this.radius,this.screenPosition.y-(this.initialCamY-this.fighter.camera.position.y)-this.scaling*this.radius,this.radius*2*this.scaling,this.radius*2*this.scaling)    }
 
     refresh(serverStrikeCirclePosition){

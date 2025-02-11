@@ -1,7 +1,19 @@
 Playtesting Quicksteel
-- Add indicator for enemy strikepoint
-- Make screen bigger so you have more informations
-	option2: make an edge of screen indicator for enemy player, if you think increasing canvas is too hard.
+*indicating priority/how much I like the idea in parentheses if needed
 
-- Make skin change on kill streak
-- Split the map into quadrants and respawn players on other side when they die
+- Add indicator for enemy strikepoint (will change game flow alot for better or worse, high prio)
+
+- Make sound cues, panning/reverb system (medium prio)
+
+- Make screen bigger so you have more information
+	option2: make an edge of screen indicator for enemy player, if you think increasing canvas is too hard. (I think this makes more sense, but might not honestly be necessary w strike indicator and sound cues, so wait for those)
+
+- Make skin change on kill streak (should only think about this after I implement actual skins)
+
+- Split the map into quadrants and respawn players on other side when they die (low prio, but shouldn't be too high effort)
+
+- Implement skins, alternates, variants w/e
+
+- Figure out stripe/payment API implementation  that would work best
+
+- Set up lobby system (high prio, this is the most broken thing about the game)

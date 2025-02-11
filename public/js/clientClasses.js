@@ -1,7 +1,7 @@
 //Dynamically adjust position of things on screen based of things 
 const canvas = document.querySelector('canvas')
-canvas.width = 1024
-canvas.height = 576
+canvas.width = 1280
+canvas.height = 720
 const c = canvas.getContext('2d')
 
 //List all audio files here, played within draw loop 

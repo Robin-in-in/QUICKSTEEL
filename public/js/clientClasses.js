@@ -8,7 +8,7 @@ const c = canvas.getContext('2d')
 let parry = new Audio("../assets/sounds/fox_parry_1.mp3")
 let slash = new Audio("../assets/sounds/fox_slash_1.mp3")
 let set = new Audio("../assets/sounds/fox_set_1.mp3")
-let dying = new Audio("../assets/sounds/isDying_fox.mp3")
+let dying = new Audio("../assets/sounds/IsDying_fox.mp3")
 const backgroundWind = new Audio("../assets/sounds/backgroundWind.mp3")
 backgroundWind.loop = true
 

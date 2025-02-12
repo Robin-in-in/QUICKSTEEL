@@ -133,20 +133,15 @@ class SwordFighter{
         } else if(this.isDying){
             this.velocity={x:0,y:0}
             this.successfullyStruck=false
-            //console.log("DYING PLAYER:", this.playerNumber)
         } else if(this.isRespawning){
             this.position={x:100,y:100}
             this.respawn()
         }else if(this.successfullyStruck){
             if(this.respawnInvincibility){
-                //console.log("respawning block entered")
                 this.successfullyStruck=false
             } else if(this.parry.isParrying){
-                //console.log("succesfulyParry block entered")
                 this.successfulParry()
-            } else if(this.strikeRecency>0.6){
-                this.clash()
-            }else{
+            } else{
                 this.die()
             }
         }
@@ -314,10 +309,14 @@ class SwordFighter{
             this.respawnInvincibility = false
             //console.log("Parrying Player", this.playerNumber)
             //logic for parrying
+            let parrywindow = 900
+            if(this.struckEnemyParry){
+                parrywindow = 600
+            }
             setTimeout(()=>{
                 this.parry.isParrying=false
                 //console.log("Parry complete")
-            }, 900)
+            }, parrywindow)
             setTimeout(()=>{
                 //console.log("Recent parry elapsed")
                 this.parry.recentParry=false
@@ -325,7 +324,8 @@ class SwordFighter{
         }
     }
 
-    instantStrike(enemyPosition, strikeData, cameraPos, strikeLength = "350") {
+    instantStrike(enemyPosition, strikeData, cameraPos, strikeLength = "300") {
+        this.isParrying=false
         let d={x:strikeData.mouse.x-(this.position.x+cameraPos.x),y:strikeData.mouse.y-(this.position.y+cameraPos.y)}
         
         console.log("instantStrikeValX (before adjustment)", d.x)
@@ -355,6 +355,7 @@ class SwordFighter{
         //console.log("Successfully Parried!", this.playerNumber)
         this.successfullyParried=true
         this.successfullyStruck=false
+        this.struckEnemyParry=false
         setTimeout(()=>{
             this.successfullyParried=false
             

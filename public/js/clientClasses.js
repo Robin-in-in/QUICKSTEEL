@@ -254,8 +254,13 @@ class SwordFighterUI{
                 //console.log("(after respawning) is dying paused?", dying.paused)
                 //console.log("(after respawning) what's dying's currentTime?", dying.currentTime)
             }else if(this.isParrying){
-                this.imageFox.src="../assets/images/parryrednew.png"
-                this.animateSwordFighter(2,16,15,this.animationScale)
+                if(this.playerNumber>1){
+                    this.imageFox.src="../assets/images/parry_blue.png"
+                    this.animateSwordFighter(2,12,11,this.animationScale)
+                } else{
+                    this.imageFox.src="../assets/images/parry_green.png"
+                    this.animateSwordFighter(2,12,11,this.animationScale)
+                }
             } else if(this.isSetting){
                 if(this.playerNumber>1){
                     this.imageFox.src="../assets/images/IsSetting_blue.png"
@@ -541,3 +546,16 @@ class BackMap{
 
 
 }  
+
+/*
+Could be useful later for clarity
+
+function playRandomSound(soundArray) {
+    const randomSound = soundArray[Math.floor(Math.random() * soundArray.length)];
+    randomSound.currentTime = 0;
+    randomSound.play();
+}
+
+// Usage:
+playRandomSound([slash1, slash2, slash3]);
+*/

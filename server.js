@@ -72,7 +72,11 @@ io.on('connection', (socket) => {
 
     socket.on('strike',(strikeData,cameraPos) => {
         if (strikeData && strikeData.mouse.x && cameraPos) {
-            fighter.setStrikePoint(strikeData,cameraPos)
+            if(fighter.isParrying){
+                fighter.instantStrike(enemyPosition, strikeData)
+            } else{
+                fighter.setStrikePoint(strikeData,cameraPos)
+            }
         } else {
             console.warn('Received invalid strikeData or cameraPos. strikeData:', strikeData);
             console.warn('cameraPos:', cameraPos)

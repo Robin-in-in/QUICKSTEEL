@@ -21,47 +21,9 @@ class StrikePoint{
         this.strikeEnd.x = this.fighter.position.x
         this.strikeEnd.y = this.fighter.position.y
         if(enemyPosition){
-            if(this.pointLineCollision(enemyPosition.x,enemyPosition.y, this.strikeStart.x, this.strikeStart.y, this.strikeEnd.x, this.strikeEnd.y)){
+            if(this.fighter.pointLineCollision(enemyPosition.x,enemyPosition.y, this.strikeStart.x, this.strikeStart.y, this.strikeEnd.x, this.strikeEnd.y)){
                 this.fighter.enemyStruck=true
-                //console.log("Enemy struck")
             }
-        }
-    }
-
-    pointLineCollision(px, py, x1, y1, x2, y2, threshold = 85, extensionFactor = 1.3) {
-        // Compute the original segment vector
-        let dx = x2 - x1;
-        let dy = y2 - y1;
-        let segmentLength = Math.hypot(dx, dy);
-    
-        if (segmentLength === 0) {
-            // The segment is actually just a point
-            return Math.hypot(px - x1, py - y1) <= threshold;
-        }
-    
-        // Normalize direction vector
-        let ux = dx / segmentLength;
-        let uy = dy / segmentLength;
-    
-        // Extend each endpoint
-        let extension = (extensionFactor - 1) * segmentLength;
-        x1 -= ux * extension;
-        y1 -= uy * extension;
-        x2 += ux * extension;
-        y2 += uy * extension;
-    
-        // Compute projection factor
-        let segmentLengthSq = (x2 - x1) ** 2 + (y2 - y1) ** 2;
-        let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / segmentLengthSq;
-    
-        if (t < 0) {
-            return Math.hypot(px - x1, py - y1) <= threshold;
-        } else if (t > 1) {
-            return Math.hypot(px - x2, py - y2) <= threshold;
-        } else {
-            let closestX = x1 + t * (x2 - x1);
-            let closestY = y1 + t * (y2 - y1);
-            return Math.hypot(px - closestX, py - closestY) <= threshold;
         }
     }
 }
@@ -362,6 +324,24 @@ class SwordFighter{
         }
     }
 
+    instantStrike(enemyPosition, strikeData, strikeLength = "550") {
+        let instantStrikeVal={x:strikeData.mouse.x,y:strikeData.mouse.y}
+        
+        let inputScale = Math.sqrt((instantStrikeVal.x^2)+(instantStrikeVal.y^2))/strikeLength
+        instantStrikeVal.x*=inputScale
+        instantStrikeVal.y*=inputScale
+
+        let strikeStart={x:this.position.x,y:this.position.y}
+        this.position.x = Math.max(0,Math.min(instantStrikeVal.x-(this.width*this.animationScale/2), this.mapWidth-(this.width*this.animationScale)))
+        this.position.y = Math.max(0,Math.min(instantStrikeVal.y-(this.height*this.animationScale/2), this.mapHeight-(this.height*this.animationScale)))
+        let strikeEnd={x:this.position.x,y:this.position.y}
+        if(enemyPosition){
+            if(this.pointLineCollision(enemyPosition.x,enemyPosition.y, strikeStart.x, strikeStart.y, strikeEnd.x, strikeEnd.y)){
+                this.enemyStruck=true
+            }
+        }
+    }
+
     successfulParry(){
         //console.log("Successfully Parried!", this.playerNumber)
         this.successfullyParried=true
@@ -430,8 +410,41 @@ class SwordFighter{
         return (distanceX ** 2 + distanceY ** 2) <= (radius ** 2)
     }
 
-    instantStrike(){
-        
+    pointLineCollision(px, py, x1, y1, x2, y2, threshold = 85, extensionFactor = 1.3) {
+        // Compute the original segment vector
+        let dx = x2 - x1;
+        let dy = y2 - y1;
+        let segmentLength = Math.hypot(dx, dy);
+    
+        if (segmentLength === 0) {
+            // The segment is actually just a point
+            return Math.hypot(px - x1, py - y1) <= threshold;
+        }
+    
+        // Normalize direction vector
+        let ux = dx / segmentLength;
+        let uy = dy / segmentLength;
+    
+        // Extend each endpoint
+        let extension = (extensionFactor - 1) * segmentLength;
+        x1 -= ux * extension;
+        y1 -= uy * extension;
+        x2 += ux * extension;
+        y2 += uy * extension;
+    
+        // Compute projection factor
+        let segmentLengthSq = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+        let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / segmentLengthSq;
+    
+        if (t < 0) {
+            return Math.hypot(px - x1, py - y1) <= threshold;
+        } else if (t > 1) {
+            return Math.hypot(px - x2, py - y2) <= threshold;
+        } else {
+            let closestX = x1 + t * (x2 - x1);
+            let closestY = y1 + t * (y2 - y1);
+            return Math.hypot(px - closestX, py - closestY) <= threshold;
+        }
     }
 }
 

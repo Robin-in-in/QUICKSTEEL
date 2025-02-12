@@ -110,6 +110,7 @@ class SwordFighter{
         this.isDying=false
         this.isClashing=false
         this.isRespawning=false
+        this.respawnInvincibility=false
         this.enemyStruck=false
         this.struckEnemyParry=false
 
@@ -176,8 +177,7 @@ class SwordFighter{
             this.position={x:100,y:100}
             this.respawn()
         }else if(this.successfullyStruck){
-            //console.log("SuccesfullyStruck block entered. Is he parying?", this.parry.isParrying)
-            if(this.isRespawning){
+            if(this.respawnInvincibility){
                 //console.log("respawning block entered")
                 this.successfullyStruck=false
             } else if(this.parry.isParrying){
@@ -396,10 +396,17 @@ class SwordFighter{
         this.isSetting = false
         this.struckEnemyParry = false
         */
+        this.respawnInvincibility=true
+
         setTimeout(()=>{
             //console.log("Player " + this.playerNumber + " respawned")
             this.isRespawning=false
         },1000)
+        
+        setTimeout(()=>{
+            //console.log("Player " + this.playerNumber + " respawned")
+            this.respawnInvincibility=false
+        },5000)
     }
 
     detectCircleFighterCollision(circleCenterX, circleCenterY, circleRadius, fighter) {

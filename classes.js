@@ -16,13 +16,10 @@ class StrikePoint{
     strike(enemyPosition) {
         this.strikeStart.x = this.fighter.position.x
         this.strikeStart.y = this.fighter.position.y
-        this.fighter.position.x = this.truePosX-(this.fighter.width*this.fighter.animationScale/2)
-        this.fighter.position.y = this.truePosY-(this.fighter.height*this.fighter.animationScale/2)
+        this.fighter.position.x = Math.max(0,Math.min(this.truePosX-(this.fighter.width*this.fighter.animationScale/2), this.fighter.mapWidth-(this.fighter.width*this.fighter.animationScale)))
+        this.fighter.position.y = Math.max(0,Math.min(this.truePosY-(this.fighter.height*this.fighter.animationScale/2), this.fighter.mapHeight-(this.fighter.height*this.fighter.animationScale)))
         this.strikeEnd.x = this.fighter.position.x
         this.strikeEnd.y = this.fighter.position.y
-        console.log("Strike Start:", this.strikeStart)
-        console.log("Strike End:", this.strikeEnd)
-        console.log("Enemy Postiion:", enemyPosition)
         if(enemyPosition){
             if(this.pointLineCollision(enemyPosition.x,enemyPosition.y, this.strikeStart.x, this.strikeStart.y, this.strikeEnd.x, this.strikeEnd.y)){
                 this.fighter.enemyStruck=true

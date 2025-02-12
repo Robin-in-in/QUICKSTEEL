@@ -133,7 +133,7 @@ class SwordFighterUI{
     }
 
     refreshAttributes(width,height,fighterID,position, facing, isRunning, isSetting, isParrying, strikeRecency, speedDebuff, serverPointPosition, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry){
-        console.log("position inside refresh attributes?",position)
+        
         if(this.fighterID == fighterID){
             this.facing = facing
             this.isRunning = isRunning
@@ -152,12 +152,20 @@ class SwordFighterUI{
             this.struckEnemyParry = struckEnemyParry
             if(this.constructor === SwordFighterUI){
                 if(!this.point && serverPointPosition){
-                    //console.log("Server Point Position", serverPointPosition)
+                    //Add a new point from the server
                     this.point = new StrikeCircleUI(serverPointPosition, this)            
                 } else if (this.point && !serverPointPosition){
+                    //If the point no longer exists on the server, delete it
                     this.point = null
                 } else {
-                    this.point.refresh(serverPointPosition)
+                    if((serverPointPosition.x!=this.point.originalPosition.x) || (serverPointPosition.y!=this.point.originalPosition.y)){
+                        //If point position changed, create a new point at that position
+                        this.point=null;
+                        this.point = new StrikeCircleUI(serverPointPosition, this)  
+                    } else{
+                        //Otherwise refresh the current point on the display
+                        this.point.refresh(serverPointPosition)
+                    }
                 }
             }   
         }     
@@ -243,8 +251,8 @@ class SwordFighterUI{
                     this.imageFox.src="../assets/images/isDying_2_blue.png"
                 }
                 this.animateSwordFighter(3,36,30,this.animationScale)
-                console.log("is dying paused?", dying.paused)
-                console.log("what's dying's currentTime?", dying.currentTime)
+                //console.log("is dying paused?", dying.paused)
+                //console.log("what's dying's currentTime?", dying.currentTime)
                 if(dying.paused && dying.currentTime==0){
                     dying.play().catch(error => console.log("Playback error:", error));
                 }
@@ -484,6 +492,7 @@ class StrikeCircleUI {
         this.fighter = player
         this.strikeCircle = new Image()
         this.strikeCircle.src = "../assets/images/StrikePoint.png"
+        this.originalPosition = screenPosition
 
         this.scaling=1.2
         this.radius = 175

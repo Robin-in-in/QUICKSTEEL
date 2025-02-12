@@ -333,6 +333,7 @@ class SwordFighter{
         //The animation isin't very long to begin with but it's just a small delay so you can't instantly readjust
         if(!this.isSetting&&!this.parry.isParrying&&!this.isDying&&!this.successfullyParried&&!this.struckEnemyParry){
             this.isSetting = true
+            this.respawnInvincibility = false
 
             
             //the "-7s" here are to offset the top corner of the screen, which is just occupied by whitespace. I might need to actually deal with this in HTML/CSS later, make the game fullscreen offrip or something, since that white space may or may not be different            this.point = new StrikePoint({position: {x: mouseX -7, y: mouseY-7},ownerFighter:this.self})
@@ -350,6 +351,7 @@ class SwordFighter{
         if(!this.isSetting&&!this.recentParry&&!this.isDying&&!this.successfullyParried){
             this.parry.isParrying = true
             this.parry.recentParry = true;
+            this.respawnInvincibility = false
             //console.log("Parrying Player", this.playerNumber)
             //logic for parrying
             setTimeout(()=>{
@@ -429,6 +431,10 @@ class SwordFighter{
     
         // Check if the distance is less than or equal to the radius
         return (distanceX ** 2 + distanceY ** 2) <= (radius ** 2)
+    }
+
+    instantStrike(){
+        
     }
 }
 

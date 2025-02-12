@@ -345,7 +345,7 @@ class SwordFighter{
 
     beginParrying() {
         //If the player is in a strike recency, they can't parry
-        if(!this.isSetting&&!this.recentParry&&!this.isDying&&!this.successfullyParried){
+        if(!this.isSetting&&!this.parry.recentParry&&!this.isDying&&!this.successfullyParried){
             this.parry.isParrying = true
             this.parry.recentParry = true;
             this.respawnInvincibility = false
@@ -358,7 +358,7 @@ class SwordFighter{
             setTimeout(()=>{
                 //console.log("Recent parry elapsed")
                 this.parry.recentParry=false
-            }, 2000)
+            }, 1900)
         }
     }
 

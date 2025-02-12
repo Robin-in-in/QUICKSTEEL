@@ -325,7 +325,7 @@ class SwordFighter{
     }
 
     instantStrike(enemyPosition, strikeData, cameraPos, strikeLength = "300") {
-        this.isParrying=false
+        this.parry.isParrying=false
         let d={x:strikeData.mouse.x-(this.position.x+cameraPos.x),y:strikeData.mouse.y-(this.position.y+cameraPos.y)}
         
         console.log("instantStrikeValX (before adjustment)", d.x)

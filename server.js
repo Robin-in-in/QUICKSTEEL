@@ -33,10 +33,11 @@ io.on('connection', (socket) => {
     fighters.set(socket.id, fighter)
     socket.emit('initial',fighter.mapWidth, fighter.mapHeight, fighter.width, fighter.height, socket.id, fighter.animationScale, fighter.playerNumber)
 
+    let enemyRef = null
+    let enemyPosition = null
     const updatesPerSecond = 60
     const updateLoop = setInterval(() => {
-        let enemyRef = null
-        let enemyPosition = null
+        
 
         
         //Could replace this with a more efficient solution since fighters.size is 2 max
@@ -72,8 +73,12 @@ io.on('connection', (socket) => {
 
     socket.on('strike',(strikeData,cameraPos) => {
         if (strikeData && strikeData.mouse.x && cameraPos) {
-            if(fighter.isParrying){
-                fighter.instantStrike(enemyPosition, strikeData)
+            console.log("Is fighter parrying", fighter.successfullyParried)
+            if(fighter.successfullyParried){
+                fighter.instantStrike(enemyPosition, strikeData, cameraPos)
+                fighter.strikeRecency = 1.1;
+                //cleanse parry debuff
+                fighter.recentParry=false
             } else{
                 fighter.setStrikePoint(strikeData,cameraPos)
             }

@@ -3,6 +3,8 @@ class StrikePoint{
         this.self = this
         this.position = {x:position.x,y:position.y}
         //Need to implement checks such that even if client edits camera, this can never end up outside of canvas
+
+    
         this.truePosX = position.x + Math.abs(cameraPos.x)
         this.truePosY = position.y + Math.abs(cameraPos.y) 
         
@@ -229,7 +231,6 @@ class SwordFighter{
                 this.point.strike(enemyPosition)
                 this.point = null
                 this.strikeRecency = 1.1;
-                this.animCount=0
                 //cleanse parry debuff
                 this.recentParry=false
             }
@@ -324,16 +325,24 @@ class SwordFighter{
         }
     }
 
-    instantStrike(enemyPosition, strikeData, strikeLength = "550") {
-        let instantStrikeVal={x:strikeData.mouse.x,y:strikeData.mouse.y}
+    instantStrike(enemyPosition, strikeData, cameraPos, strikeLength = "350") {
+        let d={x:strikeData.mouse.x-(this.position.x+cameraPos.x),y:strikeData.mouse.y-(this.position.y+cameraPos.y)}
         
-        let inputScale = Math.sqrt((instantStrikeVal.x^2)+(instantStrikeVal.y^2))/strikeLength
-        instantStrikeVal.x*=inputScale
-        instantStrikeVal.y*=inputScale
+        console.log("instantStrikeValX (before adjustment)", d.x)
+        console.log("instantStrikeValY (before adjustment)", d.y)
+
+        let currentLength = Math.sqrt((d.x ** 2) + (d.y ** 2));
+        let inputScale = strikeLength / currentLength; 
+        console.log("inputScale", inputScale)
+        d.x*=inputScale
+        d.y*=inputScale
+
+        console.log("instantStrikeValX (after adjustment)", d.x)
+        console.log("instantStrikeValY (after adjustment)", d.y)
 
         let strikeStart={x:this.position.x,y:this.position.y}
-        this.position.x = Math.max(0,Math.min(instantStrikeVal.x-(this.width*this.animationScale/2), this.mapWidth-(this.width*this.animationScale)))
-        this.position.y = Math.max(0,Math.min(instantStrikeVal.y-(this.height*this.animationScale/2), this.mapHeight-(this.height*this.animationScale)))
+        this.position.x = Math.max(0,Math.min(this.position.x+d.x, this.mapWidth-(this.width*this.animationScale)))
+        this.position.y = Math.max(0,Math.min(this.position.y+d.y, this.mapHeight-(this.height*this.animationScale)))
         let strikeEnd={x:this.position.x,y:this.position.y}
         if(enemyPosition){
             if(this.pointLineCollision(enemyPosition.x,enemyPosition.y, strikeStart.x, strikeStart.y, strikeEnd.x, strikeEnd.y)){

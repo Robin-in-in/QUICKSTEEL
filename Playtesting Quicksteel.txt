@@ -12,8 +12,14 @@ Playtesting Quicksteel
 
 - Split the map into quadrants and respawn players on other side when they die (low prio, but shouldn't be too high effort)
 
+- Add character borders on invinicibility
+
 - Implement skins, alternates, variants w/e
 
 - Figure out stripe/payment API implementation  that would work best
 
 - Set up lobby system (high prio, this is the most broken thing about the game)
+
+- Hitbox might need adjusting, the extra length feels jarring.
+
+- Make bigger map for more freedom of movement before hitting borders.

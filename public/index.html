@@ -25,10 +25,26 @@
                 font-size: 1.5em;
                 color: wheat;
             }
+
+            #scoreboard {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                color: white;
+                font-size: 24px;
+                font-family: Arial, sans-serif;
+                background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+                padding: 5px 10px;
+                border-radius: 5px;
+                z-index: 10;  /* Ensure it's above the canvas */
+            }
         </style>
     </head>
     <body>
-        <canvas class="canvas"></canvas>
+        <div>
+            <div id="scoreboard"></div>
+            <canvas class="canvas">Player kills</canvas>
+        </div>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js" integrity="sha512-8BHxHDLsOHx+flIrQ0DrZcea7MkHqRU5GbTHmbdzMRnAaoCIkZ97PqZcXJkKZckMMhqfoeaJE+DNUVuyoQsO3Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         
         <script src="js/clientClasses.js"></script>

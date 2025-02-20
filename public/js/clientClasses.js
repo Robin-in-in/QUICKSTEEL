@@ -122,6 +122,9 @@ class SwordFighterUI{
     this.isDying = false
     this.isRespawning = false
     this.struckEnemyParry = false
+    this.respawnInvincibility = false
+
+    this.killCount = 0
 
     this.fighterID = fighterID
     this.point = null
@@ -132,7 +135,7 @@ class SwordFighterUI{
         this.camera = new Camera(mapWidth, mapHeight, this)
     }
 
-    refreshAttributes(width,height,fighterID,position, facing, isRunning, isSetting, isParrying, strikeRecency, speedDebuff, serverPointPosition, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry){
+    refreshAttributes(width,height,fighterID,position, facing, isRunning, isSetting, isParrying, strikeRecency, speedDebuff, serverPointPosition, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry,respawnInvincibility){
         
         if(this.fighterID == fighterID){
             this.facing = facing
@@ -150,6 +153,7 @@ class SwordFighterUI{
             this.isDying = isDying
             this.isRespawning = isRespawning
             this.struckEnemyParry = struckEnemyParry
+            this.respawnInvincibility = respawnInvincibility
             if(this.constructor === SwordFighterUI){
                 if(!this.point && serverPointPosition){
                     //Add a new point from the server
@@ -158,13 +162,13 @@ class SwordFighterUI{
                     //If the point no longer exists on the server, delete it
                     this.point = null
                 } else {
-                    if((serverPointPosition.x!=this.point.originalPosition.x) || (serverPointPosition.y!=this.point.originalPosition.y)){
+                    if((serverPointPosition?.x!=this.point?.originalPosition.x) || (serverPointPosition?.y!=this.point?.originalPosition.y)){
                         //If point position changed, create a new point at that position
                         this.point=null;
                         this.point = new StrikeCircleUI(serverPointPosition, this)  
                     } else{
                         //Otherwise refresh the current point on the display
-                        this.point.refresh(serverPointPosition)
+                        this.point?.refresh(serverPointPosition)
                     }
                 }
             }   
@@ -353,30 +357,62 @@ class SwordFighterUI{
                 } else{
                     if(this.facing=='S'){
                         if(this.playerNumber>1){
-                            this.imageFox.src="../assets/images/IdleFoxS_blue.png"
+                            if(this.respawnInvincibility){
+                                this.imageFox.src="../assets/images/IdleFoxS_blue_invincible.png"
+                            } else {
+                                this.imageFox.src="../assets/images/IdleFoxS_blue.png"
+                            }
                         } else{
-                            this.imageFox.src="../assets/images/IdleFoxS.png"
+                            if(this.respawnInvincibility){
+                                this.imageFox.src="../assets/images/IdleFoxS_invincible.png"
+                            } else {
+                                this.imageFox.src="../assets/images/IdleFoxS.png"
+                            }
                         }
                         this.animateSwordFighter(10,20,0,this.animationScale)
                     } else if(this.facing=='N'){
                         if(this.playerNumber>1){
-                            this.imageFox.src="../assets/images/IdleFoxN_blue.png"
+                            if(this.respawnInvincibility){
+                                this.imageFox.src="../assets/images/IdleFoxN_blue_invincible.png"
+                            } else {
+                                this.imageFox.src="../assets/images/IdleFoxN_blue.png"
+                            }
                         } else{
-                            this.imageFox.src="../assets/images/IdleFoxN.png"
+                            if(this.respawnInvincibility){
+                                this.imageFox.src="../assets/images/IdleFoxN_invincible.png"
+                            } else {
+                                this.imageFox.src="../assets/images/IdleFoxN.png"
+                            }
                         }
                         this.animateSwordFighter(10,20,0,this.animationScale)
                     } else if(this.facing=='W'){
                         if(this.playerNumber>1){
-                            this.imageFox.src="../assets/images/IdleFoxW_blue.png"
+                            if(this.respawnInvincibility){
+                                this.imageFox.src="../assets/images/IdleFoxW_blue_invincible.png"
+                            } else{
+                                this.imageFox.src="../assets/images/IdleFoxW_blue.png"
+                            }
                         } else{
-                            this.imageFox.src="../assets/images/IdleFoxW.png"
+                            if(this.respawnInvincibility){
+                                this.imageFox.src="../assets/images/IdleFoxW_invincible.png"
+                            } else{
+                                this.imageFox.src="../assets/images/IdleFoxW.png"
+                            }
                         }
                         this.animateSwordFighter(10,60,0,this.animationScale)
                     } else if(this.facing=='E'){
                         if(this.playerNumber>1){
-                            this.imageFox.src="../assets/images/IdleFoxE_blue.png"
+                            if(this.respawnInvincibility){
+                                this.imageFox.src="../assets/images/IdleFoxE_blue_invincible.png"
+                            } else{
+                                this.imageFox.src="../assets/images/IdleFoxE_blue.png"
+                            }
                         } else{
-                            this.imageFox.src="../assets/images/IdleFoxE.png"
+                            if(this.respawnInvincibility){
+                                this.imageFox.src="../assets/images/IdleFoxE_invincible.png"
+                            } else{
+                                this.imageFox.src="../assets/images/IdleFoxE.png"
+                            }
                         }
                         this.animateSwordFighter(10,20,0,this.animationScale)
                     }

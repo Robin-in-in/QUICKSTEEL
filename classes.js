@@ -67,13 +67,17 @@ class SwordFighter{
         this.strikeLag = 0.7
 
         this.successfullyStruck = false
+        this.struckBy = 0
         this.successfullyParried= false
         this.isDying=false
+        this.mostRecentDeathTo=0 //player number of the player that killed this player
         this.isClashing=false
         this.isRespawning=false
         this.respawnInvincibility=false
         this.enemyStruck=false
         this.struckEnemyParry=false
+
+        this.killCount=0
 
         this.inputData = {
             keys : {
@@ -101,13 +105,16 @@ class SwordFighter{
         this.previousFacing
     }
 
-    enemyStrikeSuccessfullySignaled(enemyParrying){
+    enemyStrikeSuccessfullySignaled(enemyParrying, enemyDying){
         this.enemyStruck=false
         if(enemyParrying){
             this.struckEnemyParry = true
         }
         setTimeout(()=>{
             this.struckEnemyParry=false
+            if(enemyDying){
+                this.killCount+=1
+            }
         }, 1000)
     }
 
@@ -142,7 +149,7 @@ class SwordFighter{
             } else if(this.parry.isParrying){
                 this.successfulParry()
             } else{
-                this.die()
+                this.die(this.struckBy)
             }
         }
 
@@ -215,6 +222,9 @@ class SwordFighter{
             }
             this.isRunning=false
         }
+        
+        //Remove respawn invincibility if player moved
+        (this.velocity.x!=0||this.velocity.y!=0)?this.respawnInvincibility=false:null
         
         //If the strikepoint connected to the player is placed, detect if he is in it's radius.
         //If he is then strike. (See the method for comments on what it does)
@@ -361,9 +371,11 @@ class SwordFighter{
             
         },1000)
     }
-    die(){
+    die(struckBy){
         //console.log("Killing player " + this.playerNumber)
+        this.struckBy=0
         this.isDying=true
+        this.mostRecentDeathTo=struckBy
         this.successfullyStruck=false
         setTimeout(()=>{
             this.isDying=false

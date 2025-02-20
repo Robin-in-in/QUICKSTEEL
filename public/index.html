@@ -3,6 +3,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>ONESHOT</title>
         <!-- <link rel="stylesheet" href="../css/style.css"/> -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda+SC:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Jacquard+12&family=Jacquarda+Bastarda+9&family=Jersey+10&family=Ledger&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Phudu:wght@300..900&family=Playwrite+MX+Guides&family=Rubik+Distressed&family=Sixtyfour+Convergence:SCAN,XELA,YELA@-35,100,-100&display=swap" rel="stylesheet">
+        
         <style>
             body {
                 padding: 4rem;
@@ -13,9 +17,14 @@
                 background-image: url("assets/webAssets/bg.jpg");
             }
             
+            .canvas-container {
+                position: relative;
+                display: block
+            }
 
             .canvas {
                 border: solid 4px wheat;
+                display: block;
             }
 
             .instructions {
@@ -28,23 +37,119 @@
 
             #scoreboard {
                 position: absolute;
-                top: 10px;
-                left: 10px;
+                top: 50%;
+                left: 50%;
+                /*right: 10px;*/
+                transform: translateX(-50px);
+                width: 200px;
+                background: rgba(0, 0, 0, 0.0); 
                 color: white;
-                font-size: 24px;
-                font-family: Arial, sans-serif;
-                background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-                padding: 5px 10px;
-                border-radius: 5px;
-                z-index: 10;  /* Ensure it's above the canvas */
+                padding: 10px;
+                border-radius: 10px;
+                z-index: 10;
+
+                opacity: 0;  /* Start invisible */
+                /*transform: translateY(-20px);  Start slightly above */
+                transition: opacity 0.05s ease-out;
             }
+
+            #scoreboard.show {
+                opacity: 1;
+                /* transform: translateY(0); Move into place */
+            }
+
+            #scoreboard h2 {
+                text-align: center;
+                font-family: 'Merriweather', serif;
+                font-size: 16px;
+                font-weight: 400;
+                margin-bottom: 8px;
+                
+            }
+
+            #scoreList {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            #scoreList li {
+                font-family: "Jersey 10", serif;
+                padding: 4px 0;
+                font-size: 16px;
+                font-weight: 500;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            }
+
+            @keyframes pulse {
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.1);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }
+
+            @keyframes glitchblue {
+                0% {
+                    text-shadow: 2px 2px rgba(255,0,0,0.8), -2px -2px rgba(0,0,255,0.8);
+                }
+                20% {
+                    text-shadow: -2px -2px rgba(255,0,0,0.8), 2px 2px rgba(0,0,255,0.8);
+                }
+                40% {
+                    text-shadow: 2px -2px rgba(255,0,0,0.8), -2px 2px rgba(0,0,255,0.8);
+                }
+                60% {
+                    text-shadow: -2px 2px rgba(255,0,0,0.8), 2px -2px rgba(0,0,255,0.8);
+                }
+                80% {
+                    text-shadow: 2px 2px rgba(255,0,0,0.8), -2px -2px rgba(0,0,255,0.8);
+                }
+                100% {
+                    text-shadow: -2px -2px rgba(255,0,0,0.8), 2px 2px rgba(0,0,255,0.8);
+                }
+            }
+
+            @keyframes glitchgreen {
+                0% {
+                    text-shadow: 2px 2px rgba(255,0,0,0.8), -2px -2px rgba(0,255,0,0.8);
+                }
+                20% {
+                    text-shadow: -2px -2px rgba(255,0,0,0.8), 2px 2px rgba(0,255,0,0.8);
+                }
+                40% {
+                    text-shadow: 2px -2px rgba(255,0,0,0.8), -2px 2px rgba(0,255,0,0.8);
+                }
+                60% {
+                    text-shadow: -2px 2px rgba(255,0,0,0.8), 2px -2px rgba(0,255,0,0.8);
+                }
+                80% {
+                    text-shadow: 2px 2px rgba(255,0,0,0.8), -2px -2px rgba(0,255,0,0.8);
+                }
+                100% {
+                    text-shadow: -2px -2px rgba(255,0,0,0.8), 2px 2px rgba(0,255,0,0.8);
+                }
+            }
+            
         </style>
     </head>
     <body>
-        <div>
-            <div id="scoreboard"></div>
-            <canvas class="canvas">Player kills</canvas>
+        <!-- unused messages as of now, should go back and clean this out of client.js
+        <p id="waitingMessage" style="display: none; color: #fbf2e0; font-family: Arial, sans-serif;">Waiting for another player...</p>
+        <p id="overcrowdMessage" style="display: none; color: #fbf2e0; font-family: Arial, sans-serif;" >Too many players! Server is not designed to handle this yet :^3 </p>
+        -->
+        <div class="class-container">
+            <canvas class="canvas"></canvas>
+            <div id="scoreboard">
+                <h2 id="scoreboardTitle">Scoreboard</h2>
+                <ul id="scoreList"></ul>
+            </div>
         </div>
+        
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js" integrity="sha512-8BHxHDLsOHx+flIrQ0DrZcea7MkHqRU5GbTHmbdzMRnAaoCIkZ97PqZcXJkKZckMMhqfoeaJE+DNUVuyoQsO3Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         
         <script src="js/clientClasses.js"></script>
@@ -54,8 +159,5 @@
             'Q/Left-Click' to set a target. 'E' to parry. 'W', 'A', 'S', and
             'D' to move.
         </p>
-
-        <p id="waitingMessage" style="display: none; color: #fbf2e0; font-family: Arial, sans-serif;">Waiting for another player...</p>
-        <p id="overcrowdMessage" style="display: none; color: #fbf2e0; font-family: Arial, sans-serif;" >Too many players! Server is not designed to handle this yet :^3 </p>
     </body>
 </html>

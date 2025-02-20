@@ -8,7 +8,16 @@ const socket = io({
 //const socket = io('http://localhost:3000');
 let player = null
 let enemy = null
+let killMap = new Map()
+let nextScoreboardMessage = "Resetting..."
+let lastUpdatedCountPlayer = 0
 
+let tooManyPlayersNotified = false
+let waitingForPlayersNotified = false
+let correctAmountOfPlayersNotified = false
+
+let connectedPlayers = 0
+let currentMessageTimeout = null 
 /*
 const position = {x:0,y:0}
 const facing = 'S'
@@ -165,34 +174,107 @@ socket.on('initial', (mapWidth, mapHeight, playerWidth, playerHeight, fighterID,
     player = new SwordFighterUI(playerWidth, playerHeight, fighterID, mapWidth, mapHeight, playerScaling, playerNumber)
 });
 
-socket.on('update', (playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry, strikeRecency, speedDebuff, serverPointPosition, playerScaling, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry, amountOfPlayers) => {
-    if(amountOfPlayers==1){
+socket.on('update', (playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry, strikeRecency, speedDebuff, serverPointPosition, playerScaling, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry,amountOfPlayers,mostRecentDeathTo, respawnInvincibility) => {
+
+    connectedPlayers = amountOfPlayers
+    
+    if(connectedPlayers==1 && !waitingForPlayersNotified){
+        correctAmountOfPlayersNotified = false
+        tooManyPlayersNotified = false
+        nextScoreboardMessage = "Waiting for another player to join..."
+        updateScoreboard(10000)
+        waitingForPlayersNotified = true
+        /*
         waitingMessage.style.display = "block";
         overcrowdMessage.style.display = "none"; // Show the message
-    } else if(amountOfPlayers==2){
-        waitingMessage.style.display = "none";
-        overcrowdMessage.style.display = "none";
-    } else if(amountOfPlayers>2){
+        */
+    } else if(connectedPlayers==2 && !correctAmountOfPlayersNotified){
+        waitingForPlayersNotified = false
+        tooManyPlayersNotified = false
+        nextScoreboardMessage = "FIGHT!"
+        updateScoreboard(500)
+        correctAmountOfPlayersNotified = true
+    } else if(connectedPlayers>2 && !tooManyPlayersNotified){
+        correctAmountOfPlayersNotified = false
+        waitingForPlayersNotified = false
+        nextScoreboardMessage = "Too many players! Server doesn't handle this yet :^3"
+        updateScoreboard(10000)
+        tooManyPlayersNotified = true
+        /*
         waitingMessage.style.display = "none";
         overcrowdMessage.style.display = "block"; 
+        */
     }
 
-    player.refreshAttributes(playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry.isParrying, strikeRecency, speedDebuff, serverPointPosition, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry)
+
+
+    player.refreshAttributes(playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry.isParrying, strikeRecency, speedDebuff, serverPointPosition, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry, respawnInvincibility)
+
+    if(isDying){
+        let now=Date.now()
+        let previousData = killMap.get(mostRecentDeathTo) || { lastTime: 0, killCount: 0 };
+
+        let randomOutcome = Math.floor(Math.random() * 3)
+
+        if(enemy.isDying){
+            nextScoreboardMessage = "DOUBLE KO!!!!!"
+            scoreboardTitle.animation="glitchblue 1s ease infinite"
+        }
+        
+
+        if(now-previousData.lastTime>5000){ //ensure kill is not counted twice, since isDying is active for 4 seconds
+            //will need to update when I eventually make a map to track all players
+            nextScoreboardMessage = (randomOutcome==0) ? "DEATH IS NOT THE END" : (randomOutcome==1) ? "FOXES HAVE ∞ LIVES" : (randomOutcome==2) ? "...ONE MORE TIME" : "...ONE MORE TIME"
+            scoreboardTitle.animation="none"
+            killMap.set(mostRecentDeathTo, {lastTime: now, killCount: previousData.killCount+1})
+            console.log(`Kill registered for Player ${mostRecentDeathTo}. Total kills: ${previousData.killCount + 1}`);
+            updateScoreboard()
+        } 
+    }
 })
 
-socket.on('updateToOthers', (playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry, strikeRecency, speedDebuff, serverPointPosition, playerScaling, playerNumber, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry) => {
+socket.on('updateToOthers', (playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry, strikeRecency, speedDebuff, serverPointPosition, playerScaling, playerNumber, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry, mostRecentDeathTo, respawnInvincibility) => {
     //Updates recieved from other players. As there is only one other player right now I'm implementing it as such
     if(!enemy&&!player){
-
+        //do nothing if neither exist yet, should never happen
     }else if(!enemy&&player){
         enemy = new EnemySwordFighterUI(playerWidth, playerHeight, fighterID, playerScaling, playerNumber, player)
     } else{
-        enemy.refreshAttributes(playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry.isParrying, strikeRecency, speedDebuff, serverPointPosition, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry)
+        enemy.refreshAttributes(playerWidth, playerHeight, fighterID, playerPosition, facing, isRunning, isSetting, parry.isParrying, strikeRecency, speedDebuff, serverPointPosition, successfullyParried, isClashing, isDying, isRespawning, struckEnemyParry, respawnInvincibility)
+    }
+
+    if(isDying){
+        let now=Date.now()
+        let previousData = killMap.get(mostRecentDeathTo) || { lastTime: 0, killCount: 0 };
+
+        if(player.isDying){
+            nextScoreboardMessage = "DOUBLE KO!!!!!"
+            scoreboardTitle.animation="glitch 1s linear infinite"
+            updateScoreboard()
+        }
+
+        if(now-previousData.lastTime>5000){ //ensure kill is not counted twice, since isDying is active for 4 seconds
+            //will need to update when I eventually make a map to track all players
+            nextScoreboardMessage = ""
+            killMap.set(mostRecentDeathTo, {lastTime: now, killCount: previousData.killCount+1})
+            console.log(`Kill registered for Player ${mostRecentDeathTo}. Total kills: ${previousData.killCount + 1}`);
+            updateScoreboard()
+        } 
     }
 })
 
 socket.on('disconnectToOthers', () => {
+    nextScoreboardMessage = "Player disconnected. Updating..."
+    killMap.delete(enemy.playerNumber)
+    killMap.delete(player.playerNumber)
     enemy = null
+    updateScoreboard()
+    setTimeout(()=>{ //Allow time for disconnect message
+        tooManyPlayersNotified = false
+        waitingForPlayersNotified = false
+        correctAmountOfPlayersNotified = false
+    }, 750)
+    
 })
 
 let lastTime = 0;
@@ -238,5 +320,53 @@ function animate(timestamp){
 
 animate()
 
+function updateScoreboard(waitingInterval = 2000) {
 
+    const scoreList = document.getElementById("scoreList");
+    scoreList.innerHTML = ""; // Clear old entries
+    scoreboardTitle.innerHTML = nextScoreboardMessage;
+    if(scoreboardTitle.innerHTML=="FIGHT!"){
+        scoreboardTitle.style.fontSize = "50px";
+        scoreboardTitle.style.fontFamily = "Merriweather, serif";
+        scoreboardTitle.style.transform = "scaleY(3) translateY(-50px) translateX(-50px)";
+        //scoreboardTitle.style.transform = "translateY(-75px)"
+        scoreboardTitle.style.animation = "glitchblue 1s ease infinite";
+    } else{
+        scoreboardTitle.style.fontSize = "16px";
+        scoreboardTitle.style.transform = "scaleY(2) translateY(0px) translateX(0px)"
+        scoreboardTitle.style.animation = "none";
+    }
 
+    console.log("killMap.size", killMap.size)  
+    if(connectedPlayers==2){
+        [...killMap.entries()]
+            .sort((a, b) => b[1].killCount - a[1].killCount) // Sort by kills
+            .forEach(([player, data], index) => {
+                const li = document.createElement("li");
+                let pname = (player==1) ? "GREEN" : (player==2) ? "BLUE" : "UNKNOWN PLAYER"
+                li.innerHTML = `<span class=pname style='font-weight:7a00; font-size:35px'>${pname} : <span class=killCount style='color: white;text-align: right'>${data.killCount}</span>`;
+                li.style.color = (pname === "GREEN") ? "rgb(5, 79, 14)" : (pname === "BLUE") ? "rgb(12, 8, 117)" : "white";
+                scoreList.appendChild(li);
+                const killCountSpan = li.querySelector('.killCount');
+                (pname=="GREEN") ? killCountSpan.style.animation = "glitchgreen 1s ease infinite" : (pname=="BLUE") ? killCountSpan.style.animation = "glitchblue 1s ease infinite" : killCountSpan.style.animation = "glitchgreen 1s ease infinite"; // Trigger the animation
+            });
+    }
+    showScoreboard(waitingInterval);
+}
+
+function showScoreboard(waitingInterval = 2000) {
+
+    const scoreboard = document.getElementById("scoreboard");
+    scoreboard.classList.add("show");
+
+    console.log("titleinnerhtml", scoreboardTitle.innerHTML);
+    console.log("waitingInterval", waitingInterval);
+    console.log("classlist??", scoreboard.classList);
+
+    (currentMessageTimeout !== null) ? clearTimeout(currentMessageTimeout) : null;
+
+    currentMessageTimeout = setTimeout(() => {
+        scoreboard.classList.remove("show");
+
+    }, waitingInterval);
+}

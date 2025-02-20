@@ -53,12 +53,14 @@ io.on('connection', (socket) => {
         if(fighter.enemyStruck){
             if(enemyRef){
                 enemyRef.successfullyStruck=true
-                let enemyParrying=enemyRef.parry.isParrying
+                enemyRef.struckBy = fighter.playerNumber
+                let enemyParrying = enemyRef.parry.isParrying
                 fighter.enemyStrikeSuccessfullySignaled(enemyParrying)
             }
         }
-        socket.emit('update', fighter.width, fighter.height, socket.id, fighter.position, fighter.facing, fighter.isRunning, fighter.isSetting, fighter.parry, fighter.strikeRecency, fighter.speedDebuff, fighter.point?.position, fighter.animationScale, fighter.successfullyParried, fighter.isClashing, fighter.isDying, fighter.isRespawning, fighter.struckEnemyParry, fighters.size )
-        socket.broadcast.emit('updateToOthers',fighter.width, fighter.height, socket.id, fighter.position, fighter.facing, fighter.isRunning, fighter.isSetting, fighter.parry, fighter.strikeRecency, fighter.speedDebuff, fighter.point?.position, fighter.animationScale, fighter.playerNumber, fighter.successfullyParried, fighter.isClashing, fighter.isDying, fighter.isRespawning, fighter.struckEnemyParry  )
+
+        socket.emit('update', fighter.width, fighter.height, socket.id, fighter.position, fighter.facing, fighter.isRunning, fighter.isSetting, fighter.parry, fighter.strikeRecency, fighter.speedDebuff, fighter.point?.position, fighter.animationScale, fighter.successfullyParried, fighter.isClashing, fighter.isDying, fighter.isRespawning, fighter.struckEnemyParry, fighters.size, fighter.mostRecentDeathTo, fighter.respawnInvincibility )
+        socket.broadcast.emit('updateToOthers',fighter.width, fighter.height, socket.id, fighter.position, fighter.facing, fighter.isRunning, fighter.isSetting, fighter.parry, fighter.strikeRecency, fighter.speedDebuff, fighter.point?.position, fighter.animationScale, fighter.playerNumber, fighter.successfullyParried, fighter.isClashing, fighter.isDying, fighter.isRespawning, fighter.struckEnemyParry, fighter.mostRecentDeathTo, fighter.respawnInvincibility )
     }, 1000/updatesPerSecond)
 
     socket.on('inputs', (inputData) => {

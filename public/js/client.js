@@ -249,7 +249,7 @@ socket.on('updateToOthers', (playerWidth, playerHeight, fighterID, playerPositio
 
         if(player.isDying){
             nextScoreboardMessage = "DOUBLE KO!!!!!"
-            scoreboardTitle.animation="glitch 1s linear infinite"
+            scoreboardTitle.animation="glitchblue 1s linear infinite"
             updateScoreboard()
         }
 

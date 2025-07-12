@@ -5,11 +5,6 @@ Playtesting Quicksteel
 
 - Make sound cues, panning/reverb system (medium prio)
 
-- Make screen bigger so you have more information
-	option2: make an edge of screen indicator for enemy player, if you think increasing canvas is too hard. (I think this makes more sense, but might not honestly be necessary w strike indicator and sound cues, so wait for those)
-
-- Make skin change on kill streak (should only think about this after I implement actual skins)
-
 - Split the map into quadrants and respawn players on other side when they die (low prio, but shouldn't be too high effort)
 
 - Add character borders on invinicibility
@@ -23,3 +18,6 @@ Playtesting Quicksteel
 - Hitbox might need adjusting, the extra length feels jarring.
 
 - Make bigger map for more freedom of movement before hitting borders.
+
+ASK PLAYTESTERS:
+- Is the scorboard flash too hard to read?

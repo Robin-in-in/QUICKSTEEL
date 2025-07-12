@@ -5,11 +5,17 @@ canvas.height = 720
 const c = canvas.getContext('2d')
 
 //List all audio files here, played within draw loop 
+const GLOBAL_VOLUME = 0.2
 let parry = new Audio("../assets/sounds/fox_parry_1.mp3")
+parry.volume = GLOBAL_VOLUME
 let slash = new Audio("../assets/sounds/fox_slash_1.mp3")
+slash.volume = GLOBAL_VOLUME
 let set = new Audio("../assets/sounds/fox_set_1.mp3")
+set.volume = GLOBAL_VOLUME
 let dying = new Audio("../assets/sounds/IsDying_fox.mp3")
+dying.volume = GLOBAL_VOLUME
 const backgroundWind = new Audio("../assets/sounds/backgroundWind.mp3")
+backgroundWind.volume = GLOBAL_VOLUME
 backgroundWind.loop = true
 
 class Camera {

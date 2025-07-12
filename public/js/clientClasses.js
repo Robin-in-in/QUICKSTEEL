@@ -5,7 +5,7 @@ canvas.height = 720
 const c = canvas.getContext('2d')
 
 //List all audio files here, played within draw loop 
-const GLOBAL_VOLUME = 0.2
+const GLOBAL_VOLUME = 0.05
 let parry = new Audio("../assets/sounds/fox_parry_1.mp3")
 parry.volume = GLOBAL_VOLUME
 let slash = new Audio("../assets/sounds/fox_slash_1.mp3")
